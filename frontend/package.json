@@ -1,0 +1,14 @@
+{
+  "name": "hack-ai-frontend",
+  "version": "1.0.0",
+  "description": "Frontend static files for Schwep with local dev server and formatter",
+  "scripts": {
+    "dev": "serve .",
+    "format": "prettier --write \"**/*.{html,css,js}\"",
+    "format:check": "prettier --check \"**/*.{html,css,js}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.0.3",
+    "serve": "^14.2.1"
+  }
+}

@@ -13,7 +13,7 @@ async function loadComponent(id, path) {
 document.addEventListener('DOMContentLoaded', () => {
   const navEl = document.getElementById('nav-component');
   const footerEl = document.getElementById('footer-component');
-  
+
   if (navEl) {
     loadComponent('nav-component', 'components/nav.html');
   }

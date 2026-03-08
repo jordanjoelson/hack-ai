@@ -7,42 +7,94 @@ const ROUNDS = [
     label: 'Round 01',
     title: 'The Frame',
     cards: [
-      { name: 'Bento Grid', desc: 'A modular grid system with varied card sizes creating visual hierarchy.', preview: 'bento' },
-      { name: 'Split Layout', desc: 'Asymmetric two-column layout with dominant and secondary sections.', preview: 'split' },
-      { name: 'Swiss Grid', desc: 'Clean, structured grid with precise spacing and alignment.', preview: 'swiss' },
-      { name: 'Editorial', desc: 'Magazine-style layout with large typography and white space.', preview: 'editorial' }
-    ]
+      {
+        name: 'Bento Grid',
+        desc: 'A modular grid system with varied card sizes creating visual hierarchy.',
+        preview: 'bento',
+      },
+      {
+        name: 'Split Layout',
+        desc: 'Asymmetric two-column layout with dominant and secondary sections.',
+        preview: 'split',
+      },
+      {
+        name: 'Swiss Grid',
+        desc: 'Clean, structured grid with precise spacing and alignment.',
+        preview: 'swiss',
+      },
+      {
+        name: 'Editorial',
+        desc: 'Magazine-style layout with large typography and white space.',
+        preview: 'editorial',
+      },
+    ],
   },
   {
     label: 'Round 02',
     title: 'The Shape',
     cards: [
-      { name: 'Sharp Corners', desc: 'Crisp, geometric edges with 0px border radius.', preview: 'sharp' },
+      {
+        name: 'Sharp Corners',
+        desc: 'Crisp, geometric edges with 0px border radius.',
+        preview: 'sharp',
+      },
       { name: 'Soft Corners', desc: 'Gentle curves with 8px border radius.', preview: 'soft' },
-      { name: 'Round Corners', desc: 'Smooth, rounded edges with 12px border radius.', preview: 'round' },
-      { name: 'Pill Shape', desc: 'Fully rounded corners with 24px+ border radius.', preview: 'pill' }
-    ]
+      {
+        name: 'Round Corners',
+        desc: 'Smooth, rounded edges with 12px border radius.',
+        preview: 'round',
+      },
+      {
+        name: 'Pill Shape',
+        desc: 'Fully rounded corners with 24px+ border radius.',
+        preview: 'pill',
+      },
+    ],
   },
   {
     label: 'Round 03',
     title: 'The Tone',
     cards: [
-      { name: 'Bold Tech', desc: 'Strong, confident typography with high contrast.', preview: 'boldtech' },
-      { name: 'Editorial Modern', desc: 'Elegant serif typography with refined spacing.', preview: 'edmod' },
-      { name: 'Raw Mono', desc: 'Monospace typewriter aesthetic with raw energy.', preview: 'rawmono' },
-      { name: 'Handwritten', desc: 'Playful, personal script with organic flow.', preview: 'hand' }
-    ]
+      {
+        name: 'Bold Tech',
+        desc: 'Strong, confident typography with high contrast.',
+        preview: 'boldtech',
+      },
+      {
+        name: 'Editorial Modern',
+        desc: 'Elegant serif typography with refined spacing.',
+        preview: 'edmod',
+      },
+      {
+        name: 'Raw Mono',
+        desc: 'Monospace typewriter aesthetic with raw energy.',
+        preview: 'rawmono',
+      },
+      { name: 'Handwritten', desc: 'Playful, personal script with organic flow.', preview: 'hand' },
+    ],
   },
   {
     label: 'Round 04',
     title: 'The Finish',
     cards: [
-      { name: 'Grain Texture', desc: 'Subtle film grain overlay for vintage warmth.', preview: 'grain' },
-      { name: 'Clean Minimal', desc: 'Pure, untextured surface with perfect clarity.', preview: 'clean' },
-      { name: 'Gritty Edge', desc: 'Rough, textured finish with raw character.', preview: 'gritty' },
-      { name: 'Neon Glow', desc: 'Vibrant neon effects with glowing highlights.', preview: 'neon' }
-    ]
-  }
+      {
+        name: 'Grain Texture',
+        desc: 'Subtle film grain overlay for vintage warmth.',
+        preview: 'grain',
+      },
+      {
+        name: 'Clean Minimal',
+        desc: 'Pure, untextured surface with perfect clarity.',
+        preview: 'clean',
+      },
+      {
+        name: 'Gritty Edge',
+        desc: 'Rough, textured finish with raw character.',
+        preview: 'gritty',
+      },
+      { name: 'Neon Glow', desc: 'Vibrant neon effects with glowing highlights.', preview: 'neon' },
+    ],
+  },
 ];
 
 let currentRound = 0;
@@ -66,16 +118,16 @@ document.addEventListener('DOMContentLoaded', () => {
   showLoadingScreen();
   setTimeout(() => {
     hideLoadingScreen();
-  card = document.getElementById('card');
-  setupCard();
-  setupSwipeHandlers();
-  setupButtons();
-  setupShapeOverlay();
-  updateRoundDisplay(); // This will also update skip display
-  // Initialize blimp position
-  updateBlimpProgress();
+    card = document.getElementById('card');
+    setupCard();
+    setupSwipeHandlers();
+    setupButtons();
+    setupShapeOverlay();
+    updateRoundDisplay(); // This will also update skip display
+    // Initialize blimp position
+    updateBlimpProgress();
   }, 800); // Show loading screen for 800ms
-  
+
   // Recalculate blimp position on window resize
   window.addEventListener('resize', () => {
     updateBlimpProgress();
@@ -93,27 +145,27 @@ function hideLoadingScreen() {
 function setupCard() {
   const round = ROUNDS[currentRound];
   const cardData = round.cards[currentCardIndex];
-  
+
   document.getElementById('card-name').textContent = cardData.name;
   document.getElementById('card-desc').textContent = cardData.desc;
   document.getElementById('card-vis').innerHTML = generatePreview(cardData.preview);
-  
+
   // Reset card position
   card.style.transform = 'translate(0, 0) rotate(0deg)';
   card.style.opacity = '1';
   card.classList.remove('snapping', 'throwing', 'is-dragging');
-  
+
   // Reset indicators to hidden
   const likeInd = document.querySelector('.ind-like');
   const nopeInd = document.querySelector('.ind-nope');
   if (likeInd) likeInd.style.opacity = '0';
   if (nopeInd) nopeInd.style.opacity = '0';
-  
+
   // Reset drag state
   isDragging = false;
   currentX = 0;
   currentY = 0;
-  
+
   // Show shape overlay only in Round 2
   const shapeOverlay = document.getElementById('shape-overlay');
   if (currentRound === 1) {
@@ -208,7 +260,7 @@ function generatePreview(type) {
         <div style="width: 78%; height: 4px; background: rgba(255,255,255,0.35); border-radius: 2px;"></div>
       </div>
     `,
-    neon: `<div class="pv-neon" style="background: rgba(4,4,20,0.98); border: 2px solid rgba(61,255,208,0.4); border-radius: 8px; box-shadow: 0 0 24px rgba(61,255,208,0.3), inset 0 0 24px rgba(61,255,208,0.15), 0 4px 16px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-weight: 900; letter-spacing: 0.2em; text-shadow: 0 0 16px #3DFFD0, 0 0 36px #3DFFD0, 0 0 56px rgba(61,255,208,0.5);">NEON</div>`
+    neon: `<div class="pv-neon" style="background: rgba(4,4,20,0.98); border: 2px solid rgba(61,255,208,0.4); border-radius: 8px; box-shadow: 0 0 24px rgba(61,255,208,0.3), inset 0 0 24px rgba(61,255,208,0.15), 0 4px 16px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-weight: 900; letter-spacing: 0.2em; text-shadow: 0 0 16px #3DFFD0, 0 0 36px #3DFFD0, 0 0 56px rgba(61,255,208,0.5);">NEON</div>`,
   };
   return previews[type] || '<div class="pv-clean"><div></div></div>';
 }
@@ -218,7 +270,7 @@ function setupSwipeHandlers() {
   card.addEventListener('mousedown', startDrag);
   document.addEventListener('mousemove', drag);
   document.addEventListener('mouseup', endDrag);
-  
+
   // Touch events
   card.addEventListener('touchstart', startDragTouch);
   document.addEventListener('touchmove', dragTouch);
@@ -258,13 +310,13 @@ function dragTouch(e) {
 
 function updateCardTransform() {
   if (!isDragging) return;
-  
+
   const rotate = currentX * 0.1;
   const likeOpacity = currentX > 0 ? Math.min(currentX / 100, 1) : 0;
   const nopeOpacity = currentX < 0 ? Math.min(Math.abs(currentX) / 100, 1) : 0;
-  
+
   card.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${rotate}deg)`;
-  
+
   const likeInd = document.querySelector('.ind-like');
   const nopeInd = document.querySelector('.ind-nope');
   if (likeInd) likeInd.style.opacity = likeOpacity;
@@ -275,11 +327,11 @@ function endDrag() {
   if (!isDragging) return;
   isDragging = false;
   card.classList.remove('is-dragging');
-  
+
   const threshold = 100;
   const finalX = currentX; // Store the final position before resetting
   const finalY = currentY;
-  
+
   if (Math.abs(finalX) > threshold) {
     if (finalX > 0) {
       handleLike(finalX, finalY);
@@ -299,7 +351,7 @@ function snapBack() {
   document.querySelector('.ind-nope').style.opacity = '0';
   currentX = 0;
   currentY = 0;
-  
+
   setTimeout(() => {
     card.classList.remove('snapping');
   }, 420);
@@ -311,25 +363,25 @@ function handleLike(finalX, finalY) {
   const nopeInd = document.querySelector('.ind-nope');
   if (likeInd) likeInd.style.opacity = '0';
   if (nopeInd) nopeInd.style.opacity = '0';
-  
+
   // Throw card off screen to the right
   card.classList.add('throwing');
   const throwDistance = window.innerWidth + 300;
   const throwRotation = 45;
   card.style.transform = `translate(${throwDistance}px, ${finalY}px) rotate(${throwRotation}deg)`;
   card.style.opacity = '0';
-  
+
   // Reset drag state
   currentX = 0;
   currentY = 0;
-  
+
   // Increment cards liked counter (only when actually liked)
   cardsLikedInRound++;
-  
+
   flash('green');
   saveResult();
   updateBlimpProgress(); // Update blimp position when card is liked
-  
+
   // Wait for throw animation to complete before loading next card
   setTimeout(() => {
     nextCard();
@@ -342,20 +394,20 @@ function handleNope(finalX, finalY) {
   const nopeInd = document.querySelector('.ind-nope');
   if (likeInd) likeInd.style.opacity = '0';
   if (nopeInd) nopeInd.style.opacity = '0';
-  
+
   // Throw card off screen to the left
   card.classList.add('throwing');
   const throwDistance = -(window.innerWidth + 300);
   const throwRotation = -45;
   card.style.transform = `translate(${throwDistance}px, ${finalY}px) rotate(${throwRotation}deg)`;
   card.style.opacity = '0';
-  
+
   // Reset drag state
   currentX = 0;
   currentY = 0;
-  
+
   flash('red');
-  
+
   // Wait for throw animation to complete before loading next card
   setTimeout(() => {
     nextCard();
@@ -378,15 +430,14 @@ function flash(color = 'orange') {
 function saveResult() {
   const round = ROUNDS[currentRound];
   const cardData = round.cards[currentCardIndex];
-  
+
   if (currentRound === 0) results.frame = cardData.name;
   else if (currentRound === 1) {
     results.shape = cardData.name;
     results.radius = radiusValue;
-  }
-  else if (currentRound === 2) results.tone = cardData.name;
+  } else if (currentRound === 2) results.tone = cardData.name;
   else if (currentRound === 3) results.finish = cardData.name;
-  
+
   // Save to localStorage
   localStorage.setItem('schwep-results', JSON.stringify(results));
 }
@@ -394,31 +445,31 @@ function saveResult() {
 function nextCard() {
   currentCardIndex++;
   const round = ROUNDS[currentRound];
-  
+
   if (currentCardIndex >= round.cards.length) {
     // Round complete - blimp should be at the exact node
     currentRound++;
     currentCardIndex = 0;
     cardsLikedInRound = 0; // Reset liked cards counter for new round
-    
+
     // Reset skips for new round (skips don't carry over)
     if (currentRound < ROUNDS.length) {
       skipsUsed[currentRound] = 0;
     }
-    
+
     // Update blimp to exact node position after round increment
     updateBlimpProgress();
-    
+
     if (currentRound >= ROUNDS.length) {
       // All rounds complete
       showFinale();
       return;
     }
-    
+
     updateRoundDisplay();
   }
   // Don't update blimp progress here - only update when card is actually liked
-  
+
   setTimeout(() => {
     setupCard();
   }, 100);
@@ -433,54 +484,54 @@ function updateBlimpProgress() {
   const trackWrap = document.querySelector('.track-wrap');
   const stops = document.querySelectorAll('.tstop');
   const totalRounds = ROUNDS.length;
-  
+
   if (!trackWrap || stops.length === 0) return;
-  
+
   // Calculate progress: completed rounds + progress within current round
   const segmentSize = 100 / totalRounds; // 25% per round
-  
+
   // Base progress from completed rounds (0%, 25%, 50%, 75%)
   const baseProgress = (currentRound / totalRounds) * 100;
-  
+
   // Progress within current round (based on cards actually liked, not just index)
   let roundProgress = 0;
   if (currentRound < totalRounds) {
     const round = ROUNDS[currentRound];
     const totalCards = round.cards.length;
-    
+
     if (cardsLikedInRound > 0 && cardsLikedInRound <= totalCards) {
       // Cards actually liked so far in this round
       const cardsLiked = cardsLikedInRound;
-      
+
       // First card liked = 1/3 of segment, then continue proportionally
       if (cardsLiked === 1) {
         roundProgress = segmentSize / 3; // 1/3 of way to next node
       } else {
         // Continue from 1/3, then move proportionally for remaining cards
-        const remainingProgress = (segmentSize * 2 / 3); // Remaining 2/3 of segment
+        const remainingProgress = (segmentSize * 2) / 3; // Remaining 2/3 of segment
         const progressRatio = (cardsLiked - 1) / (totalCards - 1);
-        roundProgress = (segmentSize / 3) + (remainingProgress * progressRatio);
+        roundProgress = segmentSize / 3 + remainingProgress * progressRatio;
       }
     }
   }
-  
+
   // Total progress percentage (0-100%)
   const totalProgressPercent = baseProgress + roundProgress;
-  
+
   // Get track-wrap width
   const wrapWidth = trackWrap.offsetWidth;
-  
+
   // Line starts at center of first node (4.5px) and ends at center of last node (width - 4.5px)
   const lineStart = 4.5;
   const lineEnd = wrapWidth - 4.5;
   const lineLength = lineEnd - lineStart;
-  
+
   // Calculate position on the line (0% = lineStart, 100% = lineEnd)
   const positionOnLine = lineStart + (totalProgressPercent / 100) * lineLength;
-  
+
   // Set blimp position in pixels (centered on the blimp via translateX(-50%))
   blimp.style.left = `${positionOnLine}px`;
-  
+
   // Light up completed stops
   stops.forEach((stop, i) => {
     if (i < currentRound) {
@@ -497,7 +548,8 @@ function updateBlimpProgress() {
 
 function updateRoundDisplay() {
   const round = ROUNDS[currentRound];
-  document.getElementById('round-label').textContent = `Round ${String(currentRound + 1).padStart(2, '0')}`;
+  document.getElementById('round-label').textContent =
+    `Round ${String(currentRound + 1).padStart(2, '0')}`;
   document.getElementById('round-title').textContent = round.title;
   document.getElementById('round-num').textContent = currentRound + 1;
   updateSkipDisplay();
@@ -510,15 +562,15 @@ function updateSkipDisplay() {
   const skipCountEl = document.getElementById('skip-count');
   const skipRemainingEl = document.getElementById('skip-remaining');
   const skipBtn = document.getElementById('btn-skip');
-  
+
   if (skipRemainingEl) {
     skipRemainingEl.textContent = skipsRemaining;
   }
-  
+
   if (skipCountEl) {
     skipCountEl.style.opacity = skipsRemaining > 0 ? '0.6' : '0.3';
   }
-  
+
   if (skipBtn) {
     skipBtn.disabled = skipsRemaining <= 0;
     skipBtn.style.opacity = skipsRemaining > 0 ? '1' : '0.4';
@@ -529,33 +581,33 @@ function updateSkipDisplay() {
 function handleSkip() {
   const skipLimit = SKIP_LIMITS[currentRound];
   const skipsRemaining = skipLimit - skipsUsed[currentRound];
-  
+
   if (skipsRemaining <= 0) {
     return; // No skips left
   }
-  
+
   // Increment skip count for current round
   skipsUsed[currentRound]++;
-  
+
   // Hide indicators
   const likeInd = document.querySelector('.ind-like');
   const nopeInd = document.querySelector('.ind-nope');
   if (likeInd) likeInd.style.opacity = '0';
   if (nopeInd) nopeInd.style.opacity = '0';
-  
+
   // Animate card fade out (no throw, just fade)
   card.classList.add('throwing');
   card.style.opacity = '0';
   card.style.transform = 'translate(0, 0) rotate(0deg)';
-  
+
   // Reset drag state
   currentX = 0;
   currentY = 0;
   isDragging = false;
-  
+
   // Update skip display
   updateSkipDisplay();
-  
+
   // Move to next card without saving result
   setTimeout(() => {
     nextCard();
@@ -564,17 +616,29 @@ function handleSkip() {
 
 function setupButtons() {
   document.getElementById('btn-like').addEventListener('click', () => {
-    if (!isDragging && !card.classList.contains('throwing') && !card.classList.contains('snapping')) {
+    if (
+      !isDragging &&
+      !card.classList.contains('throwing') &&
+      !card.classList.contains('snapping')
+    ) {
       handleLike(0, 0);
     }
   });
   document.getElementById('btn-nope').addEventListener('click', () => {
-    if (!isDragging && !card.classList.contains('throwing') && !card.classList.contains('snapping')) {
+    if (
+      !isDragging &&
+      !card.classList.contains('throwing') &&
+      !card.classList.contains('snapping')
+    ) {
       handleNope(0, 0);
     }
   });
   document.getElementById('btn-skip').addEventListener('click', () => {
-    if (!isDragging && !card.classList.contains('throwing') && !card.classList.contains('snapping')) {
+    if (
+      !isDragging &&
+      !card.classList.contains('throwing') &&
+      !card.classList.contains('snapping')
+    ) {
       handleSkip();
     }
   });
@@ -585,16 +649,16 @@ function setupButtons() {
 function setupShapeOverlay() {
   const slider = document.getElementById('radius-slider');
   const pills = document.querySelectorAll('.sp-pill');
-  
+
   slider.addEventListener('input', (e) => {
     radiusValue = parseInt(e.target.value);
     document.getElementById('radius-val').textContent = `${radiusValue}px`;
     updateRadiusPreview();
   });
-  
-  pills.forEach(pill => {
+
+  pills.forEach((pill) => {
     pill.addEventListener('click', () => {
-      pills.forEach(p => p.classList.remove('on'));
+      pills.forEach((p) => p.classList.remove('on'));
       pill.classList.add('on');
       const r = parseInt(pill.dataset.r);
       radiusValue = r;
@@ -615,7 +679,7 @@ function updateRadiusPreview() {
 function showFinale() {
   // Save final results to localStorage
   localStorage.setItem('schwep-results', JSON.stringify(results));
-  
+
   // Redirect to DNA reveal page
   setTimeout(() => {
     window.location.href = 'dna.html';
@@ -641,14 +705,14 @@ function reset() {
   results = { frame: '', shape: '', tone: '', finish: '' };
   radiusValue = 12;
   skipsUsed = [0, 0, 0, 0]; // Reset all skips
-  
+
   document.getElementById('finale').classList.remove('on');
   document.getElementById('radius-slider').value = 12;
   document.getElementById('radius-val').textContent = '12px';
   document.querySelectorAll('.sp-pill').forEach((p, i) => {
     p.classList.toggle('on', i === 2);
   });
-  
+
   updateRoundDisplay();
   setupCard();
 }

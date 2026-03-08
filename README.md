@@ -15,7 +15,20 @@ hack-ai/
 
 ### Frontend
 
-Navigate to the `frontend` folder and open `index.html` in your browser, or use a local server.
+Navigate to the `frontend` folder and run the local development server:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Alternatively, open `index.html` directly in your browser.
+
+To format your code with Prettier, run:
+```bash
+npm run format
+```
 
 ### Backend
 
