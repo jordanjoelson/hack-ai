@@ -1523,11 +1523,11 @@
         color: var(--ink);
       }
       .alt-match {
-        font-size: 12px;
-        letter-spacing: 0.06em;
-        color: rgba(13, 13, 13, 0.38);
-        line-height: 1.3;
-        max-width: 90px;
+        font-size: 9px;
+        letter-spacing: 0.04em;
+        color: rgba(13, 13, 13, 0.35);
+        line-height: 1.25;
+        max-width: 85px;
         text-align: right;
       }
       .alt-cta {
@@ -1909,6 +1909,80 @@
         font-size: 12px;
         color: rgba(13, 13, 13, 0.3);
         letter-spacing: 0.1em;
+      }
+      .live-process-label {
+        font-size: 11px;
+        color: rgba(13, 13, 13, 0.5);
+        letter-spacing: 0.05em;
+      }
+      /* Codebase card */
+      .codebase-card {
+        margin-top: 16px;
+        padding: 18px;
+        background: rgba(13, 13, 13, 0.03);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        display: none;
+      }
+      .codebase-card.show { display: block; }
+      .codebase-card-title {
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(13, 13, 13, 0.4);
+        margin-bottom: 14px;
+      }
+      .codebase-tree {
+        font-family: 'DM Mono', monospace;
+        font-size: 11px;
+        line-height: 1.8;
+        color: rgba(13, 13, 13, 0.8);
+      }
+      .codebase-folder {
+        margin-left: 0;
+        padding: 2px 0;
+      }
+      .codebase-folder-name {
+        color: rgba(13, 13, 13, 0.6);
+        cursor: default;
+      }
+      .codebase-file {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(13, 13, 13, 0.06);
+      }
+      .codebase-file:last-child { border-bottom: none; }
+      .codebase-file-name {
+        flex: 1;
+        color: var(--ink);
+      }
+      .codebase-file-actions {
+        display: flex;
+        gap: 6px;
+      }
+      .codebase-file-btn {
+        font-size: 10px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        background: var(--white);
+        border: 1px solid var(--border);
+        color: rgba(13, 13, 13, 0.7);
+        transition: all 0.15s;
+      }
+      .codebase-file-btn:hover {
+        border-color: var(--orange);
+        color: var(--orange);
+      }
+      .codebase-nested {
+        margin-left: 16px;
+      }
+      .codebase-download-all {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border);
       }
     </style>
   </head>
@@ -3218,13 +3292,24 @@ ${choicesHTML}
       </div>
       <div class="live-process-row">
         <span class="live-process-step-label">2</span>
-        <button class="live-process-btn" data-action="copy-html">Transfer to HTML</button>
+        <span class="live-process-label">JSON → HTML</span>
+        <button class="live-process-btn" data-action="copy-html">Copy HTML</button>
       </div>
       <div class="live-process-row">
         <span class="live-process-step-label">3</span>
         <button class="live-process-btn primary" data-action="codebase">Codebase</button>
         <span class="live-process-divider">or</span>
         <button class="live-process-btn primary" data-action="copy-figma">Copy for Schwep Figma</button>
+      </div>
+    </div>
+    <div class="live-process-hint" id="figma-feedback-hint" style="display:none;margin-top:10px;font-size:11px;color:rgba(13,13,13,.5);">
+      → Open Figma → Plugins → Schwep Renderer → Paste & Render
+    </div>
+    <div class="codebase-card" id="codebase-card">
+      <div class="codebase-card-title">Codebase — Copy or download</div>
+      <div class="codebase-tree" id="codebase-tree"></div>
+      <div class="codebase-download-all">
+        <button class="live-process-btn primary" data-action="download-all">Download root folder (.zip)</button>
       </div>
     </div>
   </div>
@@ -3236,6 +3321,66 @@ ${choicesHTML}
       function getDesignSystemJSON() {
         if (!lastDesignSystemState) return '{}';
         return JSON.stringify(lastDesignSystemState, null, 2);
+      }
+
+      function getCodebaseFiles() {
+        if (!lastDesignSystemState) return [];
+        const s = lastDesignSystemState;
+        const html = getLiveComponentHTML();
+        const json = getDesignSystemJSON();
+        const frame = s.frame || 'Bento Grid';
+        const archetype = (s.archetype || 'Component').replace(/\s+/g, '-').toLowerCase();
+        const indexHtml = '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>' + (s.archetype || 'Component') + '</title>\n  <link rel="stylesheet" href="src/styles/main.css">\n</head>\n<body>\n  <main class="container">\n    ' + html + '\n  </main>\n</body>\n</html>';
+        const componentHtml = '<!-- ' + (s.archetype || 'Component') + ' - ' + frame + ' -->\n' + html;
+        const mainCss = '/* Design system: ' + frame + ' */\n\n.container {\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 24px;\n}\n';
+        const pkg = '{\n  "name": "' + archetype + '",\n  "version": "1.0.0",\n  "description": "Schwep design system export"\n}\n';
+        const readme = '# ' + (s.archetype || 'Component') + '\n\nExported from Schwep.\n\n## Structure\n- `index.html` - Full page\n- `src/components/component.html` - Component markup\n- `src/styles/main.css` - Styles\n';
+        return [
+          { path: 'index.html', content: indexHtml },
+          { path: 'src/components/component.html', content: componentHtml },
+          { path: 'src/styles/main.css', content: mainCss },
+          { path: 'package.json', content: pkg },
+          { path: 'README.md', content: readme },
+        ];
+      }
+
+      let codebaseFilesCache = [];
+
+      function buildCodebaseTreeHTML(files) {
+        codebaseFilesCache = files;
+        const tree = {};
+        files.forEach((f, i) => {
+          const parts = f.path.split('/');
+          let cur = tree;
+          for (let p = 0; p < parts.length - 1; p++) {
+            const seg = parts[p];
+            if (!cur[seg]) cur[seg] = { _files: [] };
+            cur = cur[seg];
+          }
+          const name = parts[parts.length - 1];
+          (cur._files = cur._files || []).push({ name, index: i });
+        });
+        const rootFiles = tree._files || [];
+        delete tree._files;
+        let html = '';
+        const renderFolder = (name, node, depth) => {
+          const indent = 'margin-left:' + (depth * 16) + 'px';
+          html += '<div class="codebase-folder" style="' + indent + '"><span class="codebase-folder-name">' + name + '/</span></div>';
+          const subDirs = Object.keys(node).filter((k) => k !== '_files').sort();
+          subDirs.forEach((d) => renderFolder(d, node[d], depth + 1));
+          (node._files || []).forEach((item) => {
+            html += '<div class="codebase-file" data-file-index="' + item.index + '" style="' + indent + '">';
+            html += '<span class="codebase-file-name">' + item.name + '</span>';
+            html += '<div class="codebase-file-actions"><button class="codebase-file-btn" data-action="copy-file">Copy</button><button class="codebase-file-btn" data-action="download-file">Download</button></div></div>';
+          });
+        };
+        rootFiles.forEach((item) => {
+          html += '<div class="codebase-file" data-file-index="' + item.index + '">';
+          html += '<span class="codebase-file-name">' + item.name + '</span>';
+          html += '<div class="codebase-file-actions"><button class="codebase-file-btn" data-action="copy-file">Copy</button><button class="codebase-file-btn" data-action="download-file">Download</button></div></div>';
+        });
+        Object.keys(tree).sort().forEach((d) => renderFolder(d, tree[d], 0));
+        return html;
       }
 
       function getLiveComponentHTML() {
@@ -3294,11 +3439,72 @@ ${choicesHTML}
           copyToClipboard(getDesignSystemJSON(), btn);
         } else if (action === 'copy-html' || action === 'copy-figma') {
           copyToClipboard(getLiveComponentHTML(), btn);
+          if (action === 'copy-figma') {
+            const hint = document.getElementById('figma-feedback-hint');
+            if (hint) { hint.style.display = 'block'; setTimeout(() => { hint.style.display = 'none'; }, 6000); }
+          }
         } else if (action === 'codebase') {
-          const html = getLiveComponentHTML();
-          copyToClipboard(html, btn);
+          const card = document.getElementById('codebase-card');
+          if (card) {
+            const files = getCodebaseFiles();
+            const tree = document.getElementById('codebase-tree');
+            if (tree) tree.innerHTML = buildCodebaseTreeHTML(files);
+            card.classList.toggle('show');
+          }
+        } else if (action === 'copy-file') {
+          const fileRow = btn.closest('.codebase-file');
+          const idx = fileRow && fileRow.dataset.fileIndex;
+          if (idx !== undefined && codebaseFilesCache[idx]) {
+            copyToClipboard(codebaseFilesCache[idx].content, btn);
+          }
+        } else if (action === 'download-file') {
+          const fileRow = btn.closest('.codebase-file');
+          const idx = fileRow && fileRow.dataset.fileIndex;
+          if (idx !== undefined && codebaseFilesCache[idx]) {
+            const f = codebaseFilesCache[idx];
+            const a = document.createElement('a');
+            a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(f.content);
+            a.download = f.path.split('/').pop();
+            a.click();
+            const orig = btn.textContent;
+            btn.textContent = 'Saved!';
+            setTimeout(() => { btn.textContent = orig; }, 1500);
+          }
+        } else if (action === 'download-all') {
+          const files = codebaseFilesCache;
+          if (!files.length) return;
+          const rootName = (lastDesignSystemState && (lastDesignSystemState.archetype || 'schwep-export').replace(/\s+/g, '-').toLowerCase()) || 'schwep-export';
+          if (typeof JSZip === 'undefined') {
+            btn.textContent = 'Loading…';
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+            s.onload = () => doDownloadZip(files, rootName, btn);
+            document.head.appendChild(s);
+          } else {
+            doDownloadZip(files, rootName, btn);
+          }
         }
       });
+
+      async function doDownloadZip(files, rootName, btn) {
+        try {
+          const zip = new JSZip();
+          const root = zip.folder(rootName);
+          files.forEach((f) => root.file(f.path, f.content));
+          const blob = await zip.generateAsync({ type: 'blob' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = rootName + '.zip';
+          a.click();
+          URL.revokeObjectURL(a.href);
+          const orig = btn.textContent;
+          btn.textContent = 'Downloaded!';
+          setTimeout(() => { btn.textContent = orig; }, 2000);
+        } catch (e) {
+          btn.textContent = 'Error — try individual download';
+          setTimeout(() => { btn.textContent = 'Download root folder (.zip)'; }, 2000);
+        }
+      }
 
       function previewDesignSystem() {
         if (!st.results['Frame']) st.results['Frame'] = 'Bento Grid';
@@ -3951,7 +4157,7 @@ ${choicesHTML}
         return (
           headerText +
           buildAltCardsFromData(cards) +
-          '<div style="margin-top:8px;font-size:12px;color:rgba(13,13,13,.35);letter-spacing:.05em;line-height:1.6;">Click to load as main card —<br>then Like or Nope it.</div>'
+          '<div style="margin-top:6px;font-size:9px;color:rgba(13,13,13,.3);letter-spacing:.04em;line-height:1.4;">Click to load as main card — then Like or Nope it.</div>'
         );
       }
 
@@ -4053,5 +4259,6 @@ ${choicesHTML}
         init();
       }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   </body>
 </html>

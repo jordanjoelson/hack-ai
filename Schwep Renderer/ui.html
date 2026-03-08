@@ -1,17 +1,1253 @@
-<h2>Rectangle Creator</h2>
-<p>Count: <input id="count" type="number" value="5"></p>
-<button id="create">Create</button>
-<button id="cancel">Cancel</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Schwep Renderer</title>
+<style>
+  /* System fonts only — external @import blocks plugin from opening in Figma sandbox */
+  :root {
+    --bg: #0C0C0F;
+    --surface: #141418;
+    --surface2: #1C1C22;
+    --border: #2A2A35;
+    --accent: #6C5CE7;
+    --accent2: #A29BFE;
+    --green: #00D68F;
+    --red: #FF4757;
+    --amber: #FFA502;
+    --text: #F0EFF5;
+    --muted: #6B6A7A;
+    --mono: ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
+    --display: system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    height: 640px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-mark {
+    width: 24px;
+    height: 24px;
+    background: var(--accent);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 13px;
+    color: white;
+    letter-spacing: -1px;
+  }
+
+  .logo-text {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+
+  .logo-text span {
+    color: var(--accent2);
+  }
+
+  .version-pill {
+    font-size: 9px;
+    font-family: var(--mono);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 2px 7px;
+    border-radius: 99px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .tab {
+    padding: 8px 14px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+
+  .tab:hover { color: var(--text); }
+
+  .tab.active {
+    color: var(--accent2);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ── Panels ── */
+  .panels {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .panel {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel.active { display: flex; }
+
+  /* ── Section Header ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── Textarea ── */
+  .code-area {
+    flex: 1;
+    background: var(--bg);
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.6;
+    padding: 14px 16px;
+    resize: none;
+    overflow-y: auto;
+    width: 100%;
+  }
+
+  .code-area::placeholder {
+    color: var(--muted);
+    opacity: 0.5;
+  }
+
+  /* ── Actions ── */
+  .actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .btn {
+    flex: 1;
+    height: 34px;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover {
+    color: var(--text);
+    border-color: var(--muted);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #7C6CF7;
+  }
+
+  .btn-primary:disabled {
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+
+  .btn-green {
+    background: #00B37B;
+    color: white;
+    flex: 1.4;
+  }
+
+  .btn-green:hover { background: #00c98a; }
+  .btn-green:disabled {
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+
+  /* ── Status Bar ── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .status-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.err { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .status-dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .status-dot.pulse {
+    background: var(--accent2);
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .status-text {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+    flex: 1;
+  }
+
+  .status-text.ok { color: var(--green); }
+  .status-text.err { color: var(--red); }
+
+  /* ── Schema View ── */
+  .schema-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+  }
+
+  .schema-json {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    line-height: 1.7;
+    color: #A29BFE;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  /* ── Config Panel ── */
+  .config-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .config-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .config-group-label {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .config-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .config-label {
+    width: 90px;
+    font-size: 11px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .config-input {
+    flex: 1;
+    height: 28px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 0 10px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .config-input:focus { border-color: var(--accent); }
+
+  .color-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .color-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .color-input-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  /* ── Component Presets ── */
+  .preset-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .preset-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .preset-card:hover {
+    border-color: var(--accent);
+    background: #1A1A28;
+  }
+
+  .preset-name {
+    font-size: 11px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .preset-desc {
+    font-size: 9.5px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* ── Parse split view ── */
+  .parse-split {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .parse-top {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--border);
+    min-height: 0;
+  }
+
+  .parse-bottom {
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  /* ── Info chips ── */
+  .chips-row {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .chip {
+    font-size: 9.5px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .chip.active {
+    border-color: var(--accent);
+    color: var(--accent2);
+    background: rgba(108, 92, 231, 0.12);
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">S</div>
+    <div class="logo-text">Schwep <span>Renderer</span></div>
+  </div>
+  <div class="version-pill">v1.0.0</div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" data-tab="html">HTML Input</div>
+  <div class="tab" data-tab="schema">Schema</div>
+  <div class="tab" data-tab="presets">Presets</div>
+  <div class="tab" data-tab="config">Config</div>
+</div>
+
+<!-- Panels -->
+<div class="panels">
+
+  <!-- ── Tab: HTML Input ── -->
+  <div class="panel active" id="panel-html">
+    <div class="section-header">
+      <span class="section-label">Paste HTML (or from Schwep Engine)</span>
+      <span id="html-char-count" style="font-size:10px;color:var(--muted);">0 chars</span>
+    </div>
+    <textarea
+      class="code-area"
+      id="html-input"
+      placeholder="<!-- Paste your HTML here or click Paste from Clipboard -->
+
+Examples:
+  <div class=&quot;card&quot;>
+    <h2>Card Title</h2>
+    <p>Some description text</p>
+    <button>Click Me</button>
+  </div>"
+    ></textarea>
+    <div class="actions">
+      <button class="btn btn-ghost" id="btn-paste">⌘ Paste</button>
+      <button class="btn btn-ghost" id="btn-clear">✕ Clear</button>
+      <button class="btn btn-primary" id="btn-parse">→ Parse</button>
+      <button class="btn btn-green" id="btn-render-html" disabled>⬡ Render</button>
+      <button class="btn btn-green" id="btn-paste-render" title="Paste from clipboard and render in one click (from Schwep Engine)">⬡ Paste & Render</button>
+    </div>
+  </div>
+
+  <!-- ── Tab: Schema ── -->
+  <div class="panel" id="panel-schema">
+    <div class="parse-split">
+      <div class="parse-top">
+        <div class="section-header">
+          <span class="section-label">Generated Schema</span>
+          <span id="schema-node-count" style="font-size:10px;color:var(--muted);">—</span>
+        </div>
+        <div class="chips-row" id="schema-chips"></div>
+        <div class="schema-area">
+          <pre class="schema-json" id="schema-output">// Parse HTML first to generate schema</pre>
+        </div>
+      </div>
+      <div class="parse-bottom">
+        <div class="section-header">
+          <span class="section-label">Manual Override</span>
+        </div>
+        <textarea
+          class="code-area"
+          id="schema-override"
+          placeholder='// Paste raw JSON schema here to override...'
+          style="font-size:10.5px;"
+        ></textarea>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-ghost" id="btn-copy-schema">Copy</button>
+      <button class="btn btn-ghost" id="btn-clear-schema">Reset</button>
+      <button class="btn btn-green" id="btn-render-schema">⬡ Render to Figma</button>
+    </div>
+  </div>
+
+  <!-- ── Tab: Presets ── -->
+  <div class="panel" id="panel-presets">
+    <div class="section-header">
+      <span class="section-label">Quick Component Presets</span>
+    </div>
+    <div class="config-scroll">
+      <div class="preset-grid" id="preset-grid"></div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-green" id="btn-render-preset" disabled>⬡ Render Selected</button>
+    </div>
+  </div>
+
+  <!-- ── Tab: Config ── -->
+  <div class="panel" id="panel-config">
+    <div class="config-scroll">
+
+      <div class="config-group">
+        <div class="config-group-label">Frame</div>
+        <div class="config-row">
+          <span class="config-label">Width (px)</span>
+          <input class="config-input" id="cfg-width" type="number" value="320" min="100" max="1440"/>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Padding</span>
+          <input class="config-input" id="cfg-padding" type="number" value="16" min="0" max="80"/>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Gap</span>
+          <input class="config-input" id="cfg-gap" type="number" value="12" min="0" max="64"/>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Border Radius</span>
+          <input class="config-input" id="cfg-radius" type="number" value="12" min="0" max="64"/>
+        </div>
+      </div>
+
+      <div class="config-group">
+        <div class="config-group-label">Colors</div>
+        <div class="config-row">
+          <span class="config-label">Primary</span>
+          <div class="color-row" style="flex:1">
+            <input type="color" class="color-swatch" id="cfg-primary-swatch" value="#4F46E5"/>
+            <input class="config-input" id="cfg-primary" value="#4F46E5"/>
+          </div>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Background</span>
+          <div class="color-row" style="flex:1">
+            <input type="color" class="color-swatch" id="cfg-bg-swatch" value="#FFFFFF"/>
+            <input class="config-input" id="cfg-bg" value="#FFFFFF"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-group">
+        <div class="config-group-label">Component Name</div>
+        <div class="config-row">
+          <input class="config-input" id="cfg-name" value="Schwep Component" style="flex:1"/>
+        </div>
+      </div>
+
+    </div>
+    <div class="actions">
+      <button class="btn btn-ghost" id="btn-reset-config">Reset</button>
+      <button class="btn btn-primary" id="btn-apply-config">Apply Config</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Status Bar -->
+<div class="status-bar">
+  <div class="status-dot" id="status-dot"></div>
+  <span class="status-text" id="status-text">Ready — paste HTML or choose a preset</span>
+</div>
+
 <script>
+// ═══════════════════════════════════════════════════════════
+// SCHWEP RENDERER — UI Logic
+// ═══════════════════════════════════════════════════════════
 
-document.getElementById('create').onclick = () => {
-  const textbox = document.getElementById('count');
-  const count = parseInt(textbox.value, 10);
-  parent.postMessage({ pluginMessage: { type: 'create-shapes', count } }, '*')
+// ── Config ────────────────────────────────────────────────
+let config = {
+  width: 320,
+  padding: 16,
+  gap: 12,
+  radius: 12,
+  primaryColor: '#4F46E5',
+  background: '#FFFFFF',
+  name: 'Schwep Component',
+};
+
+let currentSchema = null;
+let selectedPreset = null;
+
+// ── Tabs ──────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Status ────────────────────────────────────────────────
+function setStatus(msg, type = 'idle') {
+  const dot = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  dot.className = 'status-dot';
+  text.className = 'status-text';
+  if (type === 'ok')     { dot.classList.add('ok');    text.classList.add('ok'); }
+  if (type === 'err')    { dot.classList.add('err');   text.classList.add('err'); }
+  if (type === 'pulse')  { dot.classList.add('pulse'); }
+  if (type === 'warn')   { dot.classList.add('warn'); }
+  text.textContent = msg;
 }
 
-document.getElementById('cancel').onclick = () => {
-  parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
+// ── HTML Input ────────────────────────────────────────────
+const htmlInput = document.getElementById('html-input');
+htmlInput.addEventListener('input', () => {
+  document.getElementById('html-char-count').textContent = htmlInput.value.length + ' chars';
+});
+
+function getClipboardText() {
+  if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+    return navigator.clipboard.readText();
+  }
+  return Promise.resolve('');
 }
 
+document.getElementById('btn-paste').addEventListener('click', async () => {
+  try {
+    const text = await getClipboardText();
+    if (text) {
+      htmlInput.value = text;
+      document.getElementById('html-char-count').textContent = text.length + ' chars';
+      setStatus('Pasted ' + text.length + ' chars from clipboard', 'ok');
+    } else {
+      htmlInput.focus();
+      setStatus('Clipboard not available — click above and press Ctrl+V (Cmd+V)', 'warn');
+    }
+  } catch {
+    htmlInput.focus();
+    setStatus('Paste manually: click above, then Ctrl+V (Cmd+V)', 'warn');
+  }
+});
+
+// ── Paste & Render (one-click from Schwep Engine) ─────────────────
+document.getElementById('btn-paste-render').addEventListener('click', async () => {
+  try {
+    var text = await getClipboardText();
+    if (!text || !text.trim()) text = htmlInput.value;
+    if (!text.trim()) {
+      htmlInput.focus();
+      setStatus('Copy from Schwep Engine, then paste here (Ctrl+V) and click again', 'warn');
+      return;
+    }
+    htmlInput.value = text;
+    document.getElementById('html-char-count').textContent = text.length + ' chars';
+    setStatus('Parsing & rendering…', 'pulse');
+    currentSchema = parseHTML(text);
+    displaySchema(currentSchema);
+    sendRender(currentSchema);
+  } catch (e) {
+    setStatus('Error: ' + (e.message || 'paste failed'), 'err');
+  }
+});
+
+document.getElementById('btn-clear').addEventListener('click', () => {
+  htmlInput.value = '';
+  document.getElementById('html-char-count').textContent = '0 chars';
+  setStatus('Cleared', 'idle');
+});
+
+// ── HTML → Schema Parser ──────────────────────────────────
+function parseHTML(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const body = doc.body;
+
+  const schema = {
+    name: config.name,
+    primaryColor: config.primaryColor,
+    frame: {
+      width: config.width,
+      padding: config.padding,
+      gap: config.gap,
+      borderRadius: config.radius,
+      background: config.background,
+    },
+    children: [],
+  };
+
+  // Find the best root container
+  const root = body.querySelector('div, section, article, main') || body;
+  const rootStyle = root.getAttribute && root.getAttribute('style') || '';
+  const bgMatch = rootStyle.match(/background:\s*#([0-9a-fA-F]{3,6})/);
+  if (bgMatch) schema.frame.background = '#' + bgMatch[1];
+  parseChildren(root, schema.children, schema);
+
+  return schema;
+}
+
+function getTextContent(el) {
+  return el.textContent.trim().replace(/\s+/g, ' ');
+}
+
+function detectColor(el) {
+  const cls = el.className || '';
+  if (/primary|brand|accent/i.test(cls)) return config.primaryColor;
+  if (/danger|error|red/i.test(cls)) return '#EF4444';
+  if (/success|green/i.test(cls)) return '#10B981';
+  if (/warn|amber|yellow/i.test(cls)) return '#F59E0B';
+  const style = (el.getAttribute('style') || '');
+  const bgMatch = style.match(/background:\s*#([0-9a-fA-F]{3,6})/);
+  if (bgMatch) return '#' + bgMatch[1];
+  return null;
+}
+
+function parseChildren(parent, children, schema) {
+  const els = Array.from(parent.children);
+
+  for (const el of els) {
+    const tag = el.tagName.toLowerCase();
+    const cls = (el.className || '').toLowerCase();
+    const text = getTextContent(el);
+
+    if (!text && el.children.length === 0) continue;
+
+    // ── Headings → title
+    if (/^h[1-3]$/.test(tag)) {
+      children.push({ type: 'title', text, fontSize: tag === 'h1' ? 22 : tag === 'h2' ? 18 : 16 });
+      continue;
+    }
+
+    // ── h4-h6 → label
+    if (/^h[4-6]$/.test(tag)) {
+      children.push({ type: 'label', text, fontSize: 13 });
+      continue;
+    }
+
+    // ── Paragraph → description
+    if (tag === 'p') {
+      children.push({ type: 'description', text });
+      continue;
+    }
+
+    // ── Span / small → label
+    if (tag === 'span' || tag === 'small') {
+      children.push({ type: 'label', text, fontSize: 11 });
+      continue;
+    }
+
+    // ── Button
+    if (tag === 'button' || (tag === 'a' && /btn|button/i.test(cls))) {
+      const color = detectColor(el);
+      children.push({
+        type: 'button',
+        label: text,
+        backgroundColor: color || config.primaryColor,
+        fullWidth: /w-full|block/i.test(cls),
+      });
+      continue;
+    }
+
+    // ── Div styled as button (Schwep Engine: "Get started", "Learn more", etc.)
+    if (tag === 'div' && text.length <= 25) {
+      const style = (el.getAttribute('style') || '');
+      if (/background:\s*#|background:\s*rgb/.test(style) && /padding/.test(style)) {
+        const color = detectColor(el);
+        children.push({
+          type: 'button',
+          label: text,
+          backgroundColor: color || config.primaryColor,
+          fullWidth: false,
+        });
+        continue;
+      }
+      if (/border:.*solid/.test(style) && text.length <= 25 && /padding/.test(style)) {
+        children.push({
+          type: 'button',
+          label: text,
+          backgroundColor: '#F3F4F6',
+          color: '#374151',
+          fullWidth: false,
+        });
+        continue;
+      }
+    }
+
+    // ── Input / textarea
+    if (tag === 'input' || tag === 'textarea') {
+      const label = el.closest('label') ? getTextContent(el.closest('label')) : '';
+      children.push({
+        type: 'input',
+        label: el.getAttribute('aria-label') || el.getAttribute('name') || label || '',
+        placeholder: el.getAttribute('placeholder') || 'Enter value...',
+      });
+      continue;
+    }
+
+    // ── img → image
+    if (tag === 'img') {
+      children.push({
+        type: 'image',
+        alt: el.getAttribute('alt') || 'Image',
+        height: parseInt(el.getAttribute('height')) || 160,
+      });
+      continue;
+    }
+
+    // ── hr → divider
+    if (tag === 'hr') {
+      children.push({ type: 'divider' });
+      continue;
+    }
+
+    // ── ul / ol → list
+    if (tag === 'ul' || tag === 'ol') {
+      const items = Array.from(el.querySelectorAll('li')).map(li => getTextContent(li));
+      if (items.length) {
+        children.push({ type: 'list', items });
+        continue;
+      }
+    }
+
+    // ── Badge-like elements (class or inline style)
+    const style = (el.getAttribute('style') || '');
+    const looksLikeBadge = (/badge|tag|chip|pill|status/i.test(cls) && text.length < 40) ||
+      (tag === 'div' && text.length >= 2 && text.length <= 30 && /border.*solid|border-radius/.test(style) && /letter-spacing|uppercase/.test(style));
+    if (looksLikeBadge) {
+      const color = detectColor(el);
+      children.push({
+        type: 'badge',
+        label: text,
+        backgroundColor: color ? color + '22' : '#EEF2FF',
+        color: color || config.primaryColor,
+      });
+      continue;
+    }
+
+    // ── Card-like nested div
+    if ((tag === 'div' || tag === 'section' || tag === 'article') && /card|panel|box|container|item/i.test(cls)) {
+      const cardChildren = [];
+      parseChildren(el, cardChildren, schema);
+      if (cardChildren.length) {
+        children.push({ type: 'card', children: cardChildren });
+        continue;
+      }
+    }
+
+    // ── Stats / metric divs
+    if (/stat|metric|number|kpi/i.test(cls)) {
+      const numEl = el.querySelector('strong, b, [class*=value],[class*=number],[class*=count]');
+      const lblEl = el.querySelector('p, span, small, [class*=label],[class*=title]');
+      if (numEl) {
+        children.push({
+          type: 'stat',
+          value: getTextContent(numEl),
+          label: lblEl ? getTextContent(lblEl) : '',
+        });
+        continue;
+      }
+    }
+
+    // ── Progress
+    if (/progress/i.test(cls) || tag === 'progress') {
+      const val = parseFloat(el.getAttribute('value') || el.getAttribute('aria-valuenow') || '60');
+      children.push({ type: 'progress', value: val, label: el.getAttribute('aria-label') || '' });
+      continue;
+    }
+
+    // ── Divs with multiple button children → buttonRow
+    const btnChildren = Array.from(el.children).filter(c =>
+      c.tagName.toLowerCase() === 'button' ||
+      /btn|button/i.test((c.className || '').toLowerCase())
+    );
+    if (btnChildren.length >= 2) {
+      children.push({
+        type: 'buttonRow',
+        buttons: btnChildren.map(b => ({
+          label: getTextContent(b),
+          backgroundColor: /secondary|outline|ghost/i.test(b.className) ? '#F3F4F6' : config.primaryColor,
+          color: /secondary|outline|ghost/i.test(b.className) ? '#374151' : '#FFFFFF',
+        })),
+      });
+      continue;
+    }
+
+    // ── Recurse into generic divs
+    if (el.children.length > 0) {
+      parseChildren(el, children, schema);
+    } else if (text.length > 0 && text.length < 500) {
+      children.push({ type: 'description', text });
+    }
+  }
+}
+
+// ── Display Schema ────────────────────────────────────────
+function displaySchema(schema) {
+  const output = document.getElementById('schema-output');
+  output.textContent = JSON.stringify(schema, null, 2);
+  document.getElementById('schema-node-count').textContent =
+    (schema.children || []).length + ' nodes';
+
+  // Chips
+  const chips = document.getElementById('schema-chips');
+  chips.innerHTML = '';
+  const types = [...new Set((schema.children || []).map(c => c.type))];
+  types.forEach(t => {
+    const chip = document.createElement('div');
+    chip.className = 'chip active';
+    chip.textContent = t;
+    chips.appendChild(chip);
+  });
+}
+
+// ── Parse Button ──────────────────────────────────────────
+document.getElementById('btn-parse').addEventListener('click', () => {
+  const html = htmlInput.value.trim();
+  if (!html) { setStatus('Paste HTML first', 'warn'); return; }
+
+  setStatus('Parsing HTML…', 'pulse');
+  try {
+    currentSchema = parseHTML(html);
+    displaySchema(currentSchema);
+    document.getElementById('btn-render-html').disabled = false;
+    setStatus('Parsed — ' + (currentSchema.children || []).length + ' nodes found', 'ok');
+
+    // Switch to schema tab
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelector('[data-tab="schema"]').classList.add('active');
+    document.getElementById('panel-schema').classList.add('active');
+  } catch(e) {
+    setStatus('Parse error: ' + e.message, 'err');
+  }
+});
+
+// ── Render from HTML tab ──────────────────────────────────
+document.getElementById('btn-render-html').addEventListener('click', () => {
+  if (!currentSchema) return;
+  sendRender(currentSchema);
+});
+
+// ── Render from Schema tab ────────────────────────────────
+document.getElementById('btn-render-schema').addEventListener('click', () => {
+  const override = document.getElementById('schema-override').value.trim();
+  let schema = currentSchema;
+  if (override) {
+    try {
+      schema = JSON.parse(override);
+    } catch {
+      setStatus('Invalid JSON in override', 'err');
+      return;
+    }
+  }
+  if (!schema) { setStatus('No schema to render', 'warn'); return; }
+  sendRender(schema);
+});
+
+document.getElementById('btn-copy-schema').addEventListener('click', () => {
+  const text = document.getElementById('schema-output').textContent;
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(text).then(() => setStatus('Schema copied', 'ok')).catch(() => setStatus('Select and Ctrl+C to copy', 'warn'));
+  } else {
+    setStatus('Select schema text and Ctrl+C to copy', 'warn');
+  }
+});
+
+document.getElementById('btn-clear-schema').addEventListener('click', () => {
+  currentSchema = null;
+  document.getElementById('schema-output').textContent = '// Parse HTML first to generate schema';
+  document.getElementById('schema-chips').innerHTML = '';
+  document.getElementById('schema-node-count').textContent = '—';
+  document.getElementById('btn-render-html').disabled = true;
+  setStatus('Schema cleared', 'idle');
+});
+
+// ── Presets ───────────────────────────────────────────────
+const PRESETS = [
+  {
+    name: 'Hero Card',
+    desc: 'Badge + title + description + CTA',
+    schema: {
+      name: 'Hero Card',
+      badge: { label: 'New', backgroundColor: '#EEF2FF', color: '#4F46E5' },
+      title: { text: 'Build Faster with Schwep', fontSize: 22 },
+      description: { text: 'A powerful design system that converts your HTML directly into Figma components.', fontSize: 14 },
+      button: { label: 'Get Started', fullWidth: true },
+    },
+  },
+  {
+    name: 'Stat Dashboard',
+    desc: '3-column metric row',
+    schema: {
+      name: 'Stats Dashboard',
+      title: { text: 'Overview', fontSize: 18 },
+      children: [
+        { type: 'statsRow', stats: [
+          { value: '2,540', label: 'Total Users' },
+          { value: '94%', label: 'Uptime', valueColor: '#10B981' },
+          { value: '$12.4k', label: 'Revenue' },
+        ]},
+      ],
+    },
+  },
+  {
+    name: 'Profile Card',
+    desc: 'Avatar + name + bio + tags',
+    schema: {
+      name: 'Profile Card',
+      children: [
+        { type: 'header', avatar: { initials: 'JD', size: 44 }, title: 'Jordan Davis', subtitle: 'Product Designer · San Francisco' },
+        { type: 'description', text: 'Designing systems that are functional, accessible, and delightful.' },
+        { type: 'tagRow', tags: ['Figma', 'Systems', 'Motion', 'Research'] },
+        { type: 'divider' },
+        { type: 'buttonRow', buttons: [
+          { label: 'Follow', backgroundColor: '#4F46E5', color: '#fff' },
+          { label: 'Message', backgroundColor: '#F3F4F6', color: '#374151' },
+        ]},
+      ],
+    },
+  },
+  {
+    name: 'Form',
+    desc: 'Inputs + submit button',
+    schema: {
+      name: 'Form',
+      title: { text: 'Create Account', fontSize: 20 },
+      children: [
+        { type: 'input', label: 'Full Name', placeholder: 'Jordan Davis' },
+        { type: 'input', label: 'Email', placeholder: 'you@example.com' },
+        { type: 'input', label: 'Password', placeholder: '••••••••' },
+        { type: 'button', label: 'Create Account', fullWidth: true, backgroundColor: '#4F46E5' },
+        { type: 'description', text: 'Already have an account? Sign in', fontSize: 12, color: '#6B7280' },
+      ],
+    },
+  },
+  {
+    name: 'Feature List',
+    desc: 'Title + bulleted features',
+    schema: {
+      name: 'Features',
+      badge: { label: 'Included', backgroundColor: '#ECFDF5', color: '#059669' },
+      title: { text: "Everything you need", fontSize: 20 },
+      children: [
+        { type: 'list', items: [
+          'HTML to Figma in seconds',
+          'Auto-layout every component',
+          'Editable schema override',
+          'Dark-mode ready presets',
+          'Pixel-perfect typography',
+        ]},
+        { type: 'button', label: 'Start Free Trial', fullWidth: true, backgroundColor: '#059669' },
+      ],
+    },
+  },
+  {
+    name: 'Progress Tracker',
+    desc: 'Title + multiple progress bars',
+    schema: {
+      name: 'Progress Tracker',
+      title: { text: 'Sprint Progress', fontSize: 18 },
+      children: [
+        { type: 'progress', label: 'Design', value: 85 },
+        { type: 'progress', label: 'Development', value: 62 },
+        { type: 'progress', label: 'QA', value: 30, color: '#F59E0B' },
+      ],
+    },
+  },
+  {
+    name: 'Pricing Card',
+    desc: 'Plan name + price + features + CTA',
+    schema: {
+      name: 'Pricing Card',
+      badge: { label: 'Most Popular', backgroundColor: '#EEF2FF', color: '#4F46E5' },
+      title: { text: 'Pro Plan', fontSize: 20 },
+      children: [
+        { type: 'statsRow', stats: [
+          { value: '$49', label: 'per month', valueFontSize: 32 },
+        ]},
+        { type: 'divider' },
+        { type: 'list', items: ['Unlimited projects', 'Priority support', 'API access', 'Team workspaces'] },
+        { type: 'button', label: 'Upgrade to Pro', fullWidth: true, backgroundColor: '#4F46E5' },
+      ],
+    },
+  },
+  {
+    name: 'Alert Banner',
+    desc: 'Status message with action',
+    schema: {
+      name: 'Alert',
+      frame: { background: '#FEF3C7', borderRadius: 10 },
+      badge: { label: '⚠ Warning', backgroundColor: '#FDE68A', color: '#92400E' },
+      title: { text: 'Your trial expires in 3 days', fontSize: 16, color: '#92400E' },
+      description: { text: 'Upgrade now to keep access to all features without interruption.', color: '#78350F' },
+      button: { label: 'Upgrade Now', backgroundColor: '#D97706', fullWidth: true },
+    },
+  },
+];
+
+const grid = document.getElementById('preset-grid');
+const renderPresetBtn = document.getElementById('btn-render-preset');
+
+PRESETS.forEach((preset, i) => {
+  const card = document.createElement('div');
+  card.className = 'preset-card';
+  card.innerHTML = `<div class="preset-name">${preset.name}</div><div class="preset-desc">${preset.desc}</div>`;
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.preset-card').forEach(c => c.style.borderColor = '');
+    card.style.borderColor = 'var(--accent)';
+    selectedPreset = preset.schema;
+    renderPresetBtn.disabled = false;
+    setStatus('Selected: ' + preset.name, 'ok');
+  });
+  grid.appendChild(card);
+});
+
+renderPresetBtn.addEventListener('click', () => {
+  if (!selectedPreset) return;
+  const merged = mergeConfig(selectedPreset);
+  sendRender(merged);
+});
+
+// ── Config ────────────────────────────────────────────────
+function getConfig() {
+  return {
+    width: parseInt(document.getElementById('cfg-width').value) || 320,
+    padding: parseInt(document.getElementById('cfg-padding').value) || 16,
+    gap: parseInt(document.getElementById('cfg-gap').value) || 12,
+    radius: parseInt(document.getElementById('cfg-radius').value) || 12,
+    primaryColor: document.getElementById('cfg-primary').value || '#4F46E5',
+    background: document.getElementById('cfg-bg').value || '#FFFFFF',
+    name: document.getElementById('cfg-name').value || 'Schwep Component',
+  };
+}
+
+// Sync color swatch → input
+['primary', 'bg'].forEach(key => {
+  const swatch = document.getElementById(`cfg-${key}-swatch`);
+  const input  = document.getElementById(`cfg-${key}`);
+  swatch.addEventListener('input', () => { input.value = swatch.value; });
+  input.addEventListener('input', () => {
+    if (/^#[0-9a-fA-F]{6}$/.test(input.value)) swatch.value = input.value;
+  });
+});
+
+document.getElementById('btn-apply-config').addEventListener('click', () => {
+  config = getConfig();
+  setStatus('Config applied', 'ok');
+});
+
+document.getElementById('btn-reset-config').addEventListener('click', () => {
+  document.getElementById('cfg-width').value = 320;
+  document.getElementById('cfg-padding').value = 16;
+  document.getElementById('cfg-gap').value = 12;
+  document.getElementById('cfg-radius').value = 12;
+  document.getElementById('cfg-primary').value = '#4F46E5';
+  document.getElementById('cfg-primary-swatch').value = '#4F46E5';
+  document.getElementById('cfg-bg').value = '#FFFFFF';
+  document.getElementById('cfg-bg-swatch').value = '#FFFFFF';
+  document.getElementById('cfg-name').value = 'Schwep Component';
+  config = getConfig();
+  setStatus('Config reset', 'idle');
+});
+
+// ── Merge Config into Schema ──────────────────────────────
+function mergeConfig(schema) {
+  const cfg = getConfig();
+  return {
+    ...schema,
+    name: schema.name || cfg.name,
+    primaryColor: schema.primaryColor || cfg.primaryColor,
+    frame: {
+      width: cfg.width,
+      padding: cfg.padding,
+      gap: cfg.gap,
+      borderRadius: cfg.radius,
+      background: (schema.frame && schema.frame.background) || cfg.background,
+      ...(schema.frame || {}),
+    },
+  };
+}
+
+// ── Send to Figma ─────────────────────────────────────────
+function sendRender(schema) {
+  const merged = mergeConfig(schema);
+  setStatus('Rendering to Figma…', 'pulse');
+  parent.postMessage({ pluginMessage: { type: 'RENDER_SCHEMA', schema: merged } }, '*');
+}
+
+// ── Receive from Figma ────────────────────────────────────
+window.onmessage = (event) => {
+  const msg = event.data.pluginMessage;
+  if (!msg) return;
+
+  if (msg.type === 'RENDER_SUCCESS') {
+    setStatus('✓ Rendered "' + msg.nodeName + '" to canvas', 'ok');
+  }
+  if (msg.type === 'RENDER_ERROR') {
+    setStatus('Error: ' + msg.error, 'err');
+  }
+};
 </script>
+</body>
+</html>
