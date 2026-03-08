@@ -41,14 +41,14 @@
       .app {
         min-height: 100vh;
         display: grid;
-        grid-template-columns: 260px 1fr 280px;
-        grid-template-rows: auto auto minmax(400px, 1fr);
+        grid-template-columns: 170px minmax(0, 1fr) 190px;
+        grid-template-rows: auto auto minmax(380px, 1fr);
         grid-template-areas:
           'header header header'
           'left   top    right'
           'left   center right';
-        padding: 28px 24px 32px;
-        gap: 0 20px;
+        padding: 10px 10px 16px;
+        gap: 0 14px;
         max-width: 1280px;
         margin: 0 auto;
         align-items: start;
@@ -64,7 +64,7 @@
             'left'
             'center'
             'right';
-          padding: 20px 14px 32px;
+          padding: 18px 12px 28px;
         }
       }
 
@@ -76,8 +76,8 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 0 20px 0;
-        margin-bottom: 4px;
+        padding: 0 0 10px 0;
+        margin-bottom: 0;
       }
       .back-btn {
         display: flex;
@@ -88,7 +88,7 @@
         cursor: pointer;
         color: rgba(13, 13, 13, 0.3);
         font-family: 'DM Mono', monospace;
-        font-size: 9px;
+        font-size: 12px;
         letter-spacing: 0.12em;
         text-transform: uppercase;
         padding: 6px 0;
@@ -125,23 +125,26 @@
         display: flex;
         align-items: center;
         gap: 7px;
-        background: none;
-        border: 1.5px solid var(--border);
+        background: var(--white);
+        border: 2px solid #0d0d0d;
         border-radius: 9px;
         cursor: pointer;
         color: rgba(13, 13, 13, 0.45);
         font-family: 'DM Mono', monospace;
-        font-size: 9px;
+        font-size: 12px;
         letter-spacing: 0.12em;
         text-transform: uppercase;
         padding: 7px 13px;
         text-decoration: none;
         transition: all 0.15s;
+        box-shadow: 4px 4px 0 rgba(13, 13, 13, 0.15);
       }
       .analysis-btn:hover {
         color: var(--ink);
-        border-color: rgba(13, 13, 13, 0.3);
+        border-color: var(--ink);
         background: rgba(13, 13, 13, 0.04);
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0 rgba(13, 13, 13, 0.2);
       }
       .analysis-btn-dot {
         width: 5px;
@@ -160,7 +163,7 @@
         background: var(--white);
         border-radius: 14px;
         border: 1.5px solid var(--border);
-        padding: 14px 18px 12px;
+        padding: 8px 14px 8px;
         position: relative;
       }
 
@@ -172,16 +175,17 @@
         margin-bottom: 10px;
       }
       .tr-tag {
-        font-size: 9px;
+        font-family: 'DM Mono', monospace;
+        font-size: 0.55rem;
         letter-spacing: 0.18em;
         text-transform: uppercase;
         color: var(--orange);
         font-weight: 500;
       }
       .tr-title {
-        font-family: 'Syne', sans-serif;
-        font-weight: 700;
-        font-size: 13px;
+        font-family: 'Instrument Serif', serif;
+        font-size: 1.1rem;
+        font-style: italic;
         color: var(--ink);
       }
 
@@ -281,8 +285,9 @@
         margin-top: 6px;
       }
       .seg-lbl {
-        font-size: 8px;
-        letter-spacing: 0.1em;
+        font-family: 'DM Mono', monospace;
+        font-size: 0.5rem;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
         color: rgba(13, 13, 13, 0.25);
         flex: 1;
@@ -329,8 +334,17 @@
         pointer-events: auto;
         animation: none; /* no slide-in needed now */
       }
+      .dna-bar-sub {
+        font-family: 'DM Mono', monospace;
+        font-size: 0.5rem;
+        letter-spacing: 0.05em;
+        color: rgba(13, 13, 13, 0.4);
+        margin-bottom: 8px;
+        line-height: 1.4;
+      }
       .dna-bar-label {
-        font-size: 8px;
+        font-family: 'DM Mono', monospace;
+        font-size: 0.55rem;
         letter-spacing: 0.15em;
         text-transform: uppercase;
         color: rgba(13, 13, 13, 0.3);
@@ -353,7 +367,7 @@
         gap: 8px;
       }
       .dna-axis-name {
-        font-size: 7.5px;
+        font-size: 9px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: rgba(13, 13, 13, 0.35);
@@ -376,7 +390,7 @@
       }
       .dna-axis-val {
         font-family: 'DM Mono', monospace;
-        font-size: 7px;
+        font-size: 9px;
         color: rgba(13, 13, 13, 0.25);
         width: 22px;
         text-align: right;
@@ -408,7 +422,7 @@
         background: var(--ink);
         color: white;
         font-family: 'DM Mono', monospace;
-        font-size: 9px;
+        font-size: 12px;
         letter-spacing: 0.12em;
         text-transform: uppercase;
         padding: 9px 18px;
@@ -444,7 +458,7 @@
         position: relative;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 14px;
         min-width: 0;
         min-height: 520px;
         align-self: stretch;
@@ -453,7 +467,7 @@
       .deck-wrap {
         position: relative;
         width: 100%;
-        height: 460px;
+        height: 480px;
         display: block;
         flex-shrink: 0;
       }
@@ -522,7 +536,7 @@
       /* — CARD VISUAL AREA — */
       .card-vis {
         flex: 1;
-        min-height: 280px;
+        min-height: 310px;
         background: rgba(13, 13, 13, 0.03);
         border-bottom: 1px solid var(--border);
         position: relative;
@@ -549,13 +563,14 @@
         gap: 4px;
       }
       .card-name {
-        font-family: 'Syne', sans-serif;
-        font-weight: 700;
-        font-size: 20px;
+        font-family: 'Instrument Serif', serif;
+        font-style: italic;
+        font-size: 1.1rem;
         letter-spacing: -0.01em;
       }
       .card-desc {
-        font-size: 10.5px;
+        font-family: 'DM Mono', monospace;
+        font-size: 0.55rem;
         letter-spacing: 0.02em;
         color: rgba(13, 13, 13, 0.45);
         line-height: 1.5;
@@ -571,7 +586,7 @@
       }
       .dna-badge {
         font-family: 'DM Mono', monospace;
-        font-size: 8px;
+        font-size: 12px;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         font-weight: 500;
@@ -594,32 +609,35 @@
         opacity: 0.7;
       }
 
-      /* Swipe indicators */
-      .ind {
-        position: absolute;
-        top: 18px;
-        padding: 6px 14px;
-        border-radius: 8px;
+      /* Swipe indicators — fixed to viewport edges (whole screen) */
+      .deck-wrap > .ind {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 10px 20px;
+        border-radius: 12px;
         font-family: 'DM Mono', monospace;
-        font-size: 11px;
-        font-weight: 500;
+        font-size: 13px;
+        font-weight: 600;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         pointer-events: none;
         opacity: 0;
-        z-index: 20;
+        z-index: 9998;
         transition: none;
       }
-      .ind-like {
-        left: 16px;
-        background: rgba(34, 197, 94, 0.12);
-        border: 2px solid rgba(34, 197, 94, 0.6);
+      .deck-wrap > .ind-like {
+        right: 24px;
+        left: auto;
+        background: rgba(34, 197, 94, 0.2);
+        border: 2px solid rgba(34, 197, 94, 0.7);
         color: #16a34a;
       }
-      .ind-nope {
-        right: 16px;
-        background: rgba(239, 68, 68, 0.1);
-        border: 2px solid rgba(239, 68, 68, 0.5);
+      .deck-wrap > .ind-nope {
+        left: 24px;
+        right: auto;
+        background: rgba(239, 68, 68, 0.2);
+        border: 2px solid rgba(239, 68, 68, 0.7);
         color: #dc2626;
       }
 
@@ -697,17 +715,16 @@
         pointer-events: none;
         z-index: 999;
         opacity: 0;
-        transition: opacity 0.08s;
+        transition: opacity 0.12s;
       }
       #flash.on {
         opacity: 1;
-        transition: none;
       }
       #flash.flash-green {
-        background: rgba(34, 197, 94, 0.08);
+        background: rgba(34, 197, 94, 0.22);
       }
       #flash.flash-red {
-        background: rgba(239, 68, 68, 0.07);
+        background: rgba(239, 68, 68, 0.22);
       }
 
       /* ════════════════════════════════════
@@ -781,7 +798,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 9px;
+        font-size: 12px;
         font-weight: 700;
         color: rgba(13, 13, 13, 0.7);
         letter-spacing: 0.08em;
@@ -1186,7 +1203,7 @@
         padding: 6px 14px;
         border-radius: 4px;
         border: 1.5px solid rgba(13, 13, 13, 0.12);
-        font-size: 9px;
+        font-size: 12px;
         letter-spacing: 0.12em;
         text-transform: uppercase;
       }
@@ -1342,16 +1359,17 @@
         border-bottom: 1px solid var(--border);
       }
       .ctx-tag {
-        font-size: 8px;
+        font-family: 'DM Mono', monospace;
+        font-size: 0.55rem;
         letter-spacing: 0.18em;
         text-transform: uppercase;
         color: var(--orange);
         font-weight: 500;
       }
       .ctx-title {
-        font-family: 'Syne', sans-serif;
-        font-weight: 700;
-        font-size: 13px;
+        font-family: 'Instrument Serif', serif;
+        font-style: italic;
+        font-size: 1.1rem;
         color: var(--ink);
       }
 
@@ -1385,13 +1403,14 @@
         align-items: center;
       }
       .rad-label {
-        font-size: 8px;
+        font-family: 'DM Mono', monospace;
+        font-size: 0.55rem;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: rgba(13, 13, 13, 0.4);
       }
       .rad-val {
-        font-size: 8px;
+        font-size: 12px;
         letter-spacing: 0.05em;
         color: var(--ink);
         font-family: 'DM Mono', monospace;
@@ -1436,7 +1455,7 @@
       }
       .rad-preset {
         font-family: 'DM Mono', monospace;
-        font-size: 7.5px;
+        font-size: 12px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         padding: 4px 8px;
@@ -1504,7 +1523,7 @@
         color: var(--ink);
       }
       .alt-match {
-        font-size: 7px;
+        font-size: 12px;
         letter-spacing: 0.06em;
         color: rgba(13, 13, 13, 0.38);
         line-height: 1.3;
@@ -1513,7 +1532,7 @@
       }
       .alt-cta {
         font-family: 'DM Mono', monospace;
-        font-size: 7.5px;
+        font-size: 12px;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: rgba(13, 13, 13, 0.3);
@@ -1559,7 +1578,7 @@
         gap: 6px;
       }
       .ds-eyebrow {
-        font-size: 9px;
+        font-size: 12px;
         letter-spacing: 0.22em;
         text-transform: uppercase;
         color: var(--orange);
@@ -1619,7 +1638,7 @@
         align-items: center;
       }
       .ds-panel-tag {
-        font-size: 8px;
+        font-size: 12px;
         letter-spacing: 0.18em;
         text-transform: uppercase;
         color: rgba(13, 13, 13, 0.35);
@@ -1651,7 +1670,7 @@
         overflow: hidden;
       }
       .swatch-name {
-        font-size: 7.5px;
+        font-size: 12px;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         font-weight: 500;
@@ -1659,11 +1678,11 @@
       }
       .swatch-hex {
         font-family: 'DM Mono', monospace;
-        font-size: 8px;
+        font-size: 12px;
         opacity: 0.65;
       }
       .swatch-role {
-        font-size: 7px;
+        font-size: 12px;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         opacity: 0.5;
@@ -1687,7 +1706,7 @@
         padding-bottom: 0;
       }
       .type-label {
-        font-size: 7.5px;
+        font-size: 12px;
         letter-spacing: 0.14em;
         text-transform: uppercase;
         color: rgba(13, 13, 13, 0.35);
@@ -1698,7 +1717,7 @@
       }
       .type-meta {
         font-family: 'DM Mono', monospace;
-        font-size: 7.5px;
+        font-size: 12px;
         color: rgba(13, 13, 13, 0.3);
         margin-top: 3px;
       }
@@ -1721,7 +1740,7 @@
         opacity: 0.85;
       }
       .token-name {
-        font-size: 7.5px;
+        font-size: 12px;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: rgba(13, 13, 13, 0.4);
@@ -1729,7 +1748,7 @@
       }
       .token-val {
         font-family: 'DM Mono', monospace;
-        font-size: 8px;
+        font-size: 12px;
         color: rgba(13, 13, 13, 0.5);
       }
 
@@ -1744,7 +1763,7 @@
         gap: 10px;
       }
       .dna-fp-label {
-        font-size: 8px;
+        font-size: 9px;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: rgba(13, 13, 13, 0.4);
@@ -1766,7 +1785,7 @@
       }
       .dna-fp-num {
         font-family: 'DM Mono', monospace;
-        font-size: 8px;
+        font-size: 9px;
         color: rgba(13, 13, 13, 0.3);
         width: 28px;
         text-align: right;
@@ -1795,7 +1814,7 @@
         flex: 1;
       }
       .choice-chip-k {
-        font-size: 7.5px;
+        font-size: 12px;
         letter-spacing: 0.14em;
         text-transform: uppercase;
         color: rgba(13, 13, 13, 0.35);
@@ -1826,6 +1845,71 @@
       .done-btn:hover {
         background: var(--orange);
       }
+
+      /* Process area under Live Component */
+      .live-process {
+        margin-top: 16px;
+        padding: 18px;
+        background: rgba(13, 13, 13, 0.03);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+      }
+      .live-process-title {
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(13, 13, 13, 0.4);
+        margin-bottom: 14px;
+      }
+      .live-process-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .live-process-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .live-process-btn {
+        font-family: 'DM Mono', monospace;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        background: var(--white);
+        color: var(--ink);
+        border: 1.5px solid var(--border);
+        transition: all 0.15s;
+      }
+      .live-process-btn:hover {
+        border-color: var(--orange);
+        color: var(--orange);
+      }
+      .live-process-btn.primary {
+        background: var(--ink);
+        color: white;
+        border-color: var(--ink);
+      }
+      .live-process-btn.primary:hover {
+        background: var(--orange);
+        border-color: var(--orange);
+      }
+      .live-process-step-label {
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: rgba(13, 13, 13, 0.5);
+        margin-right: 4px;
+      }
+      .live-process-divider {
+        font-size: 12px;
+        color: rgba(13, 13, 13, 0.3);
+        letter-spacing: 0.1em;
+      }
     </style>
   </head>
   <body>
@@ -1854,7 +1938,7 @@
         </button>
         <a class="analysis-btn" href="archive.html">
           <div class="analysis-btn-dot"></div>
-          Analysis
+          archive
         </a>
       </div>
 
@@ -1880,13 +1964,7 @@
           <div class="ctx-title">Style Profile</div>
         </div>
         <div
-          style="
-            font-size: 8px;
-            letter-spacing: 0.05em;
-            color: rgba(13, 13, 13, 0.4);
-            margin-bottom: 8px;
-            line-height: 1.4;
-          "
+          class="dna-bar-sub"
           id="dna-bar-sub"
         >
           building your profile...
@@ -1897,9 +1975,9 @@
       <!-- ══ SWIPE DECK ══ -->
       <div class="deck-area" id="deck-area">
         <div class="deck-wrap">
+          <div class="ind ind-like" id="ind-like">✓ Like</div>
+          <div class="ind ind-nope" id="ind-nope">✕ Nope</div>
           <div class="card" id="card">
-            <div class="ind ind-like" id="ind-like">✓ Like</div>
-            <div class="ind ind-nope" id="ind-nope">✕ Nope</div>
             <div class="card-vis" id="card-vis">
               <div
                 style="
@@ -1953,7 +2031,6 @@
       <!-- ══ DONE ══ -->
       <div class="done-screen" id="done-screen">
         <div id="ds-output"><!-- built by showDone() / previewDesignSystem() --></div>
-        <button class="done-btn" id="btn-again">⌂ Back</button>
       </div>
     </div>
 
@@ -2197,14 +2274,16 @@
       }
 
       // ─── DNA PANEL ────────────────────────────────────────────────────────────────
-      // Shown below tracker from round 2 onward.
+      // Shown below tracker at all times.
       // Renders 6 axis bars showing the current DNA vector in real time.
       function renderDNABar() {
         const wrap = document.getElementById('dna-bar-wrap');
         if (!wrap) return;
 
-        if (!dnaVec || st.round < 1) {
-          wrap.classList.remove('visible');
+        if (!dnaVec) {
+          wrap.classList.add('visible');
+          const sub = document.getElementById('dna-bar-sub');
+          if (sub) sub.textContent = 'building your profile...';
           return;
         }
 
@@ -2318,7 +2397,7 @@
         if (!f) return;
         f.className = '';
         f.classList.add('flash-' + c, 'on');
-        setTimeout(() => f.classList.remove('on'), 100);
+        setTimeout(() => f.classList.remove('on'), 420);
       }
 
       const IC = {
@@ -2348,7 +2427,7 @@
   <div style="grid-row:1/3;background:#0D0D0D;border-radius:10px;padding:13px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative;">
     <div style="position:absolute;top:-15px;right:-15px;width:70px;height:70px;border-radius:50%;background:rgba(255,77,0,.18);"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:7px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.3);">Dashboard</div>
+      <div style="font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.3);">Dashboard</div>
       <div style="color:rgba(255,255,255,.4);display:flex;align-items:center;">${IC.grid}</div>
     </div>
     <div>
@@ -2357,7 +2436,7 @@
         ${[30, 50, 38, 70, 55, 90, 72].map((h) => `<div style="flex:1;background:rgba(255,77,0,${0.4 + h / 200});border-radius:2px 2px 0 0;height:${h}%;"></div>`).join('')}
       </div>
       <div style="display:inline-flex;align-items:center;gap:5px;background:#FF4D00;border-radius:5px;padding:5px 9px;">
-        <span style="font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:white;font-weight:600;">Explore</span>
+        <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:white;font-weight:600;">Explore</span>
         <span style="color:white;display:flex;">${IC.arrow}</span>
       </div>
     </div>
@@ -2365,18 +2444,18 @@
   <!-- stat cell -->
   <div style="background:white;border-radius:10px;padding:10px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(13,13,13,.07);">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);">Users</div>
+      <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);">Users</div>
       <span style="color:#FF4D00;display:flex;">${IC.chart}</span>
     </div>
     <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#0D0D0D;line-height:1;">12.4k</div>
-    <div style="font-size:7px;color:#16a34a;display:flex;align-items:center;gap:2px;">↑ 18% <span style="color:rgba(13,13,13,.3);">this week</span></div>
+    <div style="font-size:12px;color:#16a34a;display:flex;align-items:center;gap:2px;">↑ 18% <span style="color:rgba(13,13,13,.3);">this week</span></div>
   </div>
   <!-- action cell -->
   <div style="background:rgba(255,77,0,.08);border:1.5px solid rgba(255,77,0,.2);border-radius:10px;padding:10px;display:flex;align-items:center;gap:8px;">
     <div style="width:28px;height:28px;background:#FF4D00;border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0;">${IC.zap}</div>
     <div>
-      <div style="font-size:8px;font-weight:700;color:#0D0D0D;letter-spacing:.02em;">Quick action</div>
-      <div style="font-size:7px;color:rgba(13,13,13,.4);margin-top:1px;">Get started →</div>
+      <div style="font-size:12px;font-weight:700;color:#0D0D0D;letter-spacing:.02em;">Quick action</div>
+      <div style="font-size:12px;color:rgba(13,13,13,.4);margin-top:1px;">Get started →</div>
     </div>
   </div>
 </div>`,
@@ -2387,14 +2466,14 @@
   <div style="background:linear-gradient(155deg,#0D0D0D 0%,#1c1c1c 100%);border-radius:10px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative;">
     <div style="position:absolute;bottom:-20px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,77,0,.1);"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:7px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.3);">Featured</div>
+      <div style="font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.3);">Featured</div>
       <div style="color:rgba(255,255,255,.3);display:flex;">${IC.menu}</div>
     </div>
     <div>
       <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:white;line-height:1.15;margin-bottom:7px;">Design<br>that<br><em style="color:#FF4D00;font-style:normal;">works.</em></div>
-      <div style="font-size:7.5px;color:rgba(255,255,255,.4);line-height:1.5;margin-bottom:10px;">Built for people who care about every detail.</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;margin-bottom:10px;">Built for people who care about every detail.</div>
       <div style="display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.2);border-radius:5px;padding:5px 10px;">
-        <span style="font-size:7.5px;color:rgba(255,255,255,.7);letter-spacing:.06em;">Read more</span>
+        <span style="font-size:12px;color:rgba(255,255,255,.7);letter-spacing:.06em;">Read more</span>
         <span style="color:#FF4D00;display:flex;">${IC.arrow}</span>
       </div>
     </div>
@@ -2412,7 +2491,7 @@
       <div style="width:26px;height:26px;background:rgba(13,13,13,.05);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">${ic}</div>
       <div style="min-width:0;">
         <div style="font-size:8.5px;font-weight:700;color:#0D0D0D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t}</div>
-        <div style="font-size:7px;color:rgba(13,13,13,.4);margin-top:1px;">${s}</div>
+        <div style="font-size:12px;color:rgba(13,13,13,.4);margin-top:1px;">${s}</div>
       </div>
     </div>`
       )
@@ -2426,7 +2505,7 @@
   <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #0D0D0D;">
     <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:11px;letter-spacing:.08em;">STUDIO</div>
     <div style="display:flex;gap:12px;align-items:center;">
-      ${['Work', 'About', 'Contact'].map((t) => `<span style="font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.4);">${t}</span>`).join('')}
+      ${['Work', 'About', 'Contact'].map((t) => `<span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.4);">${t}</span>`).join('')}
       <div style="width:22px;height:22px;border:1.5px solid #0D0D0D;display:flex;align-items:center;justify-content:center;">${IC.plus}</div>
     </div>
   </div>
@@ -2434,8 +2513,8 @@
   <div style="flex:1;display:grid;grid-template-columns:90px 1fr;gap:0;overflow:hidden;">
     <!-- sidebar index -->
     <div style="border-right:1px solid rgba(13,13,13,.1);padding:12px;display:flex;flex-direction:column;gap:6px;">
-      <div style="font-size:7px;letter-spacing:.15em;text-transform:uppercase;color:#FF4D00;margin-bottom:2px;">Index</div>
-      ${['01 Grid', '02 Type', '03 Color', '04 Motion'].map((t, i) => `<div style="font-size:7.5px;color:${i === 0 ? '#0D0D0D' : 'rgba(13,13,13,.4)'};padding:3px 0;border-bottom:1px solid rgba(13,13,13,.06);${i === 0 ? 'font-weight:600;' : ''}">${t}</div>`).join('')}
+      <div style="font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#FF4D00;margin-bottom:2px;">Index</div>
+      ${['01 Grid', '02 Type', '03 Color', '04 Motion'].map((t, i) => `<div style="font-size:12px;color:${i === 0 ? '#0D0D0D' : 'rgba(13,13,13,.4)'};padding:3px 0;border-bottom:1px solid rgba(13,13,13,.06);${i === 0 ? 'font-weight:600;' : ''}">${t}</div>`).join('')}
     </div>
     <!-- main content -->
     <div style="padding:12px;display:flex;flex-direction:column;justify-content:space-between;">
@@ -2454,16 +2533,16 @@
           editorial: `<div style="width:100%;height:100%;background:#FAFAF8;display:flex;flex-direction:column;overflow:hidden;">
   <!-- masthead -->
   <div style="background:#0D0D0D;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #FF4D00;">
-    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:9px;color:white;letter-spacing:.12em;text-transform:uppercase;">The Journal</div>
-    <div style="font-size:7px;letter-spacing:.12em;color:rgba(255,255,255,.35);text-transform:uppercase;">Issue 12</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:12px;color:white;letter-spacing:.12em;text-transform:uppercase;">The Journal</div>
+    <div style="font-size:12px;letter-spacing:.12em;color:rgba(255,255,255,.35);text-transform:uppercase;">Issue 12</div>
   </div>
   <!-- content -->
   <div style="flex:1;padding:11px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr;gap:8px;overflow:hidden;">
-    <div style="grid-column:1/3;font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:#FF4D00;border-bottom:1px solid rgba(255,77,0,.2);padding-bottom:5px;">Design — Long Read</div>
+    <div style="grid-column:1/3;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#FF4D00;border-bottom:1px solid rgba(255,77,0,.2);padding-bottom:5px;">Design — Long Read</div>
     <!-- headline -->
     <div style="display:flex;flex-direction:column;justify-content:space-between;">
       <div style="font-family:'Georgia',serif;font-size:17px;line-height:1.2;font-weight:700;color:#0D0D0D;">The<br><em style="color:#FF4D00;">future</em><br>of form.</div>
-      <div style="font-size:7px;font-style:italic;color:rgba(13,13,13,.4);font-family:'Georgia',serif;">by the editors</div>
+      <div style="font-size:12px;font-style:italic;color:rgba(13,13,13,.4);font-family:'Georgia',serif;">by the editors</div>
     </div>
     <!-- image placeholder + body -->
     <div style="display:flex;flex-direction:column;gap:6px;">
@@ -2480,7 +2559,7 @@
   <div style="width:100%;background:white;border:2px solid #0D0D0D;overflow:hidden;">
     <!-- header -->
     <div style="background:#0D0D0D;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:9px;color:white;letter-spacing:.08em;">STUDIO</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:12px;color:white;letter-spacing:.08em;">STUDIO</div>
       <div style="color:rgba(255,255,255,.5);display:flex;">${IC.menu}</div>
     </div>
     <div style="padding:13px;display:flex;flex-direction:column;gap:10px;">
@@ -2488,12 +2567,12 @@
       <div style="display:flex;flex-direction:column;gap:3px;">${[90, 70].map((w) => `<div style="height:6px;width:${w}%;background:rgba(13,13,13,.1);"></div>`).join('')}</div>
       <!-- buttons 0px -->
       <div style="display:flex;gap:6px;">
-        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:7.5px;letter-spacing:.12em;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">BUY <span style="display:flex;">${IC.arrow}</span></div>
-        <div style="flex:1;border:1.5px solid #0D0D0D;padding:7px;text-align:center;font-size:7.5px;letter-spacing:.1em;font-family:'DM Mono',monospace;">LEARN</div>
+        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:12px;letter-spacing:.12em;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">BUY <span style="display:flex;">${IC.arrow}</span></div>
+        <div style="flex:1;border:1.5px solid #0D0D0D;padding:7px;text-align:center;font-size:12px;letter-spacing:.1em;font-family:'DM Mono',monospace;">LEARN</div>
       </div>
       <!-- tag chips 0px -->
       <div style="display:flex;gap:4px;">
-        ${['Design', 'Code'].map((t) => `<div style="background:rgba(13,13,13,.08);padding:3px 7px;font-size:6.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.6);">${t}</div>`).join('')}
+        ${['Design', 'Code'].map((t) => `<div style="background:rgba(13,13,13,.08);padding:3px 7px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.6);">${t}</div>`).join('')}
       </div>
     </div>
   </div>
@@ -2503,18 +2582,18 @@
           soft: `<div style="width:100%;height:100%;background:#F0EDE7;padding:14px;display:flex;align-items:center;justify-content:center;">
   <div style="width:100%;background:white;border:1.5px solid rgba(13,13,13,.1);border-radius:8px;overflow:hidden;box-shadow:0 3px 16px rgba(13,13,13,.07);">
     <div style="background:#0D0D0D;padding:8px 12px;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:9px;color:white;">Studio</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:white;">Studio</div>
       <div style="color:rgba(255,255,255,.45);display:flex;">${IC.menu}</div>
     </div>
     <div style="padding:13px;display:flex;flex-direction:column;gap:10px;">
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;line-height:1.15;color:#0D0D0D;">Soft &<br>Approachable.</div>
       <div style="display:flex;flex-direction:column;gap:4px;">${[90, 70].map((w) => `<div style="height:6px;width:${w}%;background:rgba(13,13,13,.09);border-radius:4px;"></div>`).join('')}</div>
       <div style="display:flex;gap:6px;">
-        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:7.5px;border-radius:6px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">Buy <span style="display:flex;">${IC.arrow}</span></div>
-        <div style="flex:1;border:1.5px solid rgba(13,13,13,.14);padding:7px;text-align:center;font-size:7.5px;border-radius:6px;font-family:'DM Mono',monospace;color:rgba(13,13,13,.7);">Learn</div>
+        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:12px;border-radius:6px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">Buy <span style="display:flex;">${IC.arrow}</span></div>
+        <div style="flex:1;border:1.5px solid rgba(13,13,13,.14);padding:7px;text-align:center;font-size:12px;border-radius:6px;font-family:'DM Mono',monospace;color:rgba(13,13,13,.7);">Learn</div>
       </div>
       <div style="display:flex;gap:4px;">
-        ${['Design', 'Code'].map((t) => `<div style="background:rgba(13,13,13,.07);padding:3px 8px;font-size:6.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(13,13,13,.55);border-radius:4px;">${t}</div>`).join('')}
+        ${['Design', 'Code'].map((t) => `<div style="background:rgba(13,13,13,.07);padding:3px 8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:rgba(13,13,13,.55);border-radius:4px;">${t}</div>`).join('')}
       </div>
     </div>
   </div>
@@ -2524,18 +2603,18 @@
           round: `<div style="width:100%;height:100%;background:#ECF0F5;padding:14px;display:flex;align-items:center;justify-content:center;">
   <div style="width:100%;background:white;border:1px solid rgba(13,13,13,.08);border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(13,13,13,.09);">
     <div style="background:#0D0D0D;padding:8px 12px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:9px;color:white;">Studio</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:white;">Studio</div>
       <div style="color:rgba(255,255,255,.4);display:flex;">${IC.menu}</div>
     </div>
     <div style="padding:13px;display:flex;flex-direction:column;gap:10px;">
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;line-height:1.15;color:#0D0D0D;">Smooth &<br>Friendly.</div>
       <div style="display:flex;flex-direction:column;gap:4px;">${[90, 70].map((w) => `<div style="height:6px;width:${w}%;background:rgba(13,13,13,.09);border-radius:8px;"></div>`).join('')}</div>
       <div style="display:flex;gap:6px;">
-        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:7.5px;border-radius:10px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">Buy <span style="display:flex;">${IC.arrow}</span></div>
-        <div style="flex:1;border:1.5px solid rgba(13,13,13,.12);padding:7px;text-align:center;font-size:7.5px;border-radius:10px;font-family:'DM Mono',monospace;color:rgba(13,13,13,.7);">Learn</div>
+        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:12px;border-radius:10px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">Buy <span style="display:flex;">${IC.arrow}</span></div>
+        <div style="flex:1;border:1.5px solid rgba(13,13,13,.12);padding:7px;text-align:center;font-size:12px;border-radius:10px;font-family:'DM Mono',monospace;color:rgba(13,13,13,.7);">Learn</div>
       </div>
       <div style="display:flex;gap:4px;">
-        ${['Design', 'Code'].map((t) => `<div style="background:rgba(13,13,13,.07);padding:3px 8px;font-size:6.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(13,13,13,.55);border-radius:8px;">${t}</div>`).join('')}
+        ${['Design', 'Code'].map((t) => `<div style="background:rgba(13,13,13,.07);padding:3px 8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:rgba(13,13,13,.55);border-radius:8px;">${t}</div>`).join('')}
       </div>
     </div>
   </div>
@@ -2545,18 +2624,18 @@
           pill: `<div style="width:100%;height:100%;background:#EAF0FF;padding:14px;display:flex;align-items:center;justify-content:center;">
   <div style="width:100%;background:white;border:1px solid rgba(13,13,13,.06);border-radius:24px;overflow:hidden;box-shadow:0 6px 32px rgba(13,13,13,.08);">
     <div style="background:#0D0D0D;padding:8px 16px;border-radius:22px 22px 0 0;display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:9px;color:white;">Studio</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:white;">Studio</div>
       <div style="color:rgba(255,255,255,.4);display:flex;">${IC.menu}</div>
     </div>
     <div style="padding:14px 16px;display:flex;flex-direction:column;gap:11px;">
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;line-height:1.15;color:#0D0D0D;">Round &<br>Playful.</div>
       <div style="display:flex;flex-direction:column;gap:4px;">${[90, 70].map((w) => `<div style="height:6px;width:${w}%;background:rgba(13,13,13,.08);border-radius:99px;"></div>`).join('')}</div>
       <div style="display:flex;gap:6px;">
-        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:7.5px;border-radius:99px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">Buy <span style="display:flex;">${IC.arrow}</span></div>
-        <div style="flex:1;border:1.5px solid rgba(13,13,13,.1);padding:7px;text-align:center;font-size:7.5px;border-radius:99px;font-family:'DM Mono',monospace;color:rgba(13,13,13,.7);">Learn</div>
+        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:12px;border-radius:99px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">Buy <span style="display:flex;">${IC.arrow}</span></div>
+        <div style="flex:1;border:1.5px solid rgba(13,13,13,.1);padding:7px;text-align:center;font-size:12px;border-radius:99px;font-family:'DM Mono',monospace;color:rgba(13,13,13,.7);">Learn</div>
       </div>
       <div style="display:flex;gap:4px;flex-wrap:wrap;">
-        ${['Design', 'Code'].map((t) => `<div style="background:rgba(13,13,13,.06);padding:3px 10px;font-size:6.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(13,13,13,.5);border-radius:99px;">${t}</div>`).join('')}
+        ${['Design', 'Code'].map((t) => `<div style="background:rgba(13,13,13,.06);padding:3px 10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:rgba(13,13,13,.5);border-radius:99px;">${t}</div>`).join('')}
       </div>
     </div>
   </div>
@@ -2567,10 +2646,10 @@
   <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#FF4D00 0%,rgba(255,77,0,0) 100%);"></div>
   <div style="position:absolute;bottom:0;right:0;width:120px;height:120px;background:radial-gradient(circle,rgba(255,77,0,.12) 0%,transparent 70%);pointer-events:none;"></div>
   <div style="display:flex;justify-content:space-between;align-items:center;position:relative;">
-    <div style="font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.25);">SYS_001</div>
+    <div style="font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.25);">SYS_001</div>
     <div style="display:flex;gap:4px;align-items:center;">
       <div style="width:5px;height:5px;border-radius:50%;background:#FF4D00;box-shadow:0 0 5px #FF4D00;"></div>
-      <div style="font-size:6.5px;letter-spacing:.1em;color:rgba(255,77,0,.7);font-family:'DM Mono',monospace;">LIVE</div>
+      <div style="font-size:12px;letter-spacing:.1em;color:rgba(255,77,0,.7);font-family:'DM Mono',monospace;">LIVE</div>
     </div>
   </div>
   <div style="position:relative;">
@@ -2579,8 +2658,8 @@
       ${[100, 68].map((w) => `<div style="height:2px;width:${w}%;background:rgba(255,255,255,.12);border-radius:1px;"></div>`).join('')}
     </div>
     <div style="display:flex;gap:6px;">
-      <div style="background:#FF4D00;color:white;font-size:7px;letter-spacing:.15em;padding:6px 12px;font-family:'DM Mono',monospace;text-transform:uppercase;display:flex;align-items:center;gap:4px;">LAUNCH <span style="display:flex;">${IC.arrow}</span></div>
-      <div style="border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-size:7px;letter-spacing:.12em;padding:6px 12px;font-family:'DM Mono',monospace;text-transform:uppercase;">DOCS</div>
+      <div style="background:#FF4D00;color:white;font-size:12px;letter-spacing:.15em;padding:6px 12px;font-family:'DM Mono',monospace;text-transform:uppercase;display:flex;align-items:center;gap:4px;">LAUNCH <span style="display:flex;">${IC.arrow}</span></div>
+      <div style="border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-size:12px;letter-spacing:.12em;padding:6px 12px;font-family:'DM Mono',monospace;text-transform:uppercase;">DOCS</div>
     </div>
   </div>
 </div>`,
@@ -2589,12 +2668,12 @@
           edmod: `<div style="width:100%;height:100%;background:#FAFAF8;padding:0;display:flex;flex-direction:column;overflow:hidden;">
   <!-- thin rule header -->
   <div style="padding:9px 14px;border-bottom:1px solid rgba(13,13,13,.12);display:flex;justify-content:space-between;align-items:baseline;">
-    <div style="font-family:'Georgia',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(13,13,13,.5);">The Review</div>
-    <div style="font-family:'Georgia',serif;font-size:8px;color:rgba(13,13,13,.3);font-style:italic;">Vol. XII</div>
+    <div style="font-family:'Georgia',serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:rgba(13,13,13,.5);">The Review</div>
+    <div style="font-family:'Georgia',serif;font-size:12px;color:rgba(13,13,13,.3);font-style:italic;">Vol. XII</div>
   </div>
   <div style="flex:1;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;">
     <div>
-      <div style="font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:#FF4D00;margin-bottom:8px;">Feature Essay</div>
+      <div style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#FF4D00;margin-bottom:8px;">Feature Essay</div>
       <div style="font-family:'Georgia',serif;font-size:20px;line-height:1.15;font-weight:700;color:#0D0D0D;margin-bottom:6px;">On the art<br>of <em style="color:#FF4D00;">refined</em><br>simplicity.</div>
       <div style="width:24px;height:2px;background:#0D0D0D;margin-bottom:8px;"></div>
     </div>
@@ -2603,8 +2682,8 @@
         ${[95, 82, 88].map((w) => `<div style="height:4px;width:${w}%;background:rgba(13,13,13,.09);border-radius:1px;"></div>`).join('')}
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(13,13,13,.1);padding-top:6px;">
-        <div style="font-family:'Georgia',serif;font-size:7.5px;font-style:italic;color:rgba(13,13,13,.4);">by the editors</div>
-        <div style="font-family:'Georgia',serif;font-size:9px;color:rgba(13,13,13,.4);">→</div>
+        <div style="font-family:'Georgia',serif;font-size:12px;font-style:italic;color:rgba(13,13,13,.4);">by the editors</div>
+        <div style="font-family:'Georgia',serif;font-size:12px;color:rgba(13,13,13,.4);">→</div>
       </div>
     </div>
   </div>
@@ -2618,7 +2697,7 @@
     <div style="width:7px;height:7px;border-radius:50%;background:#FFBD2E;"></div>
     <div style="width:7px;height:7px;border-radius:50%;background:#27C93F;"></div>
     <div style="flex:1;"></div>
-    <div style="font-size:7px;color:rgba(255,255,255,.2);letter-spacing:.05em;">schwep — zsh</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.2);letter-spacing:.05em;">schwep — zsh</div>
     <div style="flex:1;"></div>
   </div>
   <!-- terminal body -->
@@ -2652,7 +2731,7 @@
       <span style="color:#FF4D00;font-size:14px;">♡</span>
       <span style="color:#FF4D00;font-size:14px;">★</span>
     </div>
-    <div style="font-family:'Georgia',serif;font-size:9px;font-style:italic;color:rgba(13,13,13,.35);border-top:1px solid rgba(13,13,13,.1);padding-top:5px;">— with care</div>
+    <div style="font-family:'Georgia',serif;font-size:12px;font-style:italic;color:rgba(13,13,13,.35);border-top:1px solid rgba(13,13,13,.1);padding-top:5px;">— with care</div>
   </div>
 </div>`,
 
@@ -2664,15 +2743,15 @@
   <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(13,13,13,.18) 100%);pointer-events:none;"></div>
   <div style="position:relative;padding:14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(60,40,20,.5);font-family:'DM Mono',monospace;">Est. 1924</div>
-      <div style="width:22px;height:22px;border:1.5px solid rgba(60,40,20,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(60,40,20,.5);">✦</div>
+      <div style="font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:rgba(60,40,20,.5);font-family:'DM Mono',monospace;">Est. 1924</div>
+      <div style="width:22px;height:22px;border:1.5px solid rgba(60,40,20,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(60,40,20,.5);">✦</div>
     </div>
     <div>
       <div style="font-family:'Georgia',serif;font-size:19px;font-weight:700;line-height:1.15;color:#2C1F0F;margin-bottom:6px;">Warm.<br>Textured.<br><em>Alive.</em></div>
       <div style="width:36px;height:2px;background:#8B6A45;border-radius:1px;margin-bottom:8px;"></div>
       <div style="display:flex;flex-direction:column;gap:3px;">${[88, 70, 78].map((w) => `<div style="height:5px;width:${w}%;background:rgba(60,40,20,.18);border-radius:2px;"></div>`).join('')}</div>
     </div>
-    <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(44,31,15,.85);color:#EDE5D8;font-size:7.5px;letter-spacing:.12em;padding:6px 11px;text-transform:uppercase;font-family:'DM Mono',monospace;border-radius:3px;">Explore <span style="display:flex;">${IC.arrow}</span></div>
+    <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(44,31,15,.85);color:#EDE5D8;font-size:12px;letter-spacing:.12em;padding:6px 11px;text-transform:uppercase;font-family:'DM Mono',monospace;border-radius:3px;">Explore <span style="display:flex;">${IC.arrow}</span></div>
   </div>
 </div>`,
 
@@ -2681,7 +2760,7 @@
   <div style="padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(13,13,13,.07);">
     <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:10px;letter-spacing:.06em;color:#0D0D0D;">STUDIO</div>
     <div style="display:flex;gap:12px;align-items:center;">
-      ${['Work', 'Info'].map((t) => `<span style="font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);">${t}</span>`).join('')}
+      ${['Work', 'Info'].map((t) => `<span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);">${t}</span>`).join('')}
     </div>
   </div>
   <div style="flex:1;padding:16px;display:flex;flex-direction:column;justify-content:space-between;">
@@ -2691,10 +2770,10 @@
     </div>
     <div>
       <div style="display:flex;gap:6px;margin-bottom:8px;">
-        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;border-radius:3px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">View work <span style="display:flex;">${IC.arrow}</span></div>
-        <div style="border:1px solid rgba(13,13,13,.12);color:rgba(13,13,13,.6);padding:7px;text-align:center;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;border-radius:3px;font-family:'DM Mono',monospace;">About</div>
+        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:12px;letter-spacing:.1em;text-transform:uppercase;border-radius:3px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">View work <span style="display:flex;">${IC.arrow}</span></div>
+        <div style="border:1px solid rgba(13,13,13,.12);color:rgba(13,13,13,.6);padding:7px;text-align:center;font-size:12px;letter-spacing:.1em;text-transform:uppercase;border-radius:3px;font-family:'DM Mono',monospace;">About</div>
       </div>
-      <div style="font-size:7px;color:rgba(13,13,13,.25);letter-spacing:.08em;text-align:center;border-top:1px solid rgba(13,13,13,.06);padding-top:7px;">© 2024 Studio — All rights reserved</div>
+      <div style="font-size:12px;color:rgba(13,13,13,.25);letter-spacing:.08em;text-align:center;border-top:1px solid rgba(13,13,13,.06);padding-top:7px;">© 2024 Studio — All rights reserved</div>
     </div>
   </div>
 </div>`,
@@ -2707,7 +2786,7 @@
   <div style="height:3px;background:linear-gradient(90deg,#FF4D00,#ff9500);flex-shrink:0;"></div>
   <div style="flex:1;padding:12px;display:flex;flex-direction:column;justify-content:space-between;position:relative;">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3);">GRIT/001</div>
+      <div style="font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3);">GRIT/001</div>
       <div style="display:flex;gap:3px;">
         <div style="width:6px;height:6px;background:#FF4D00;"></div>
         <div style="width:6px;height:6px;background:rgba(255,77,0,.4);"></div>
@@ -2721,8 +2800,8 @@
       <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:10px;">${[100, 75, 85, 52].map((w) => `<div style="height:2px;width:${w}%;background:rgba(255,255,255,.2);"></div>`).join('')}</div>
     </div>
     <div style="display:flex;gap:5px;">
-      <div style="flex:1;border:1.5px solid rgba(255,255,255,.2);padding:7px;text-align:center;font-size:7.5px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.6);font-family:'DM Mono',monospace;">INFO</div>
-      <div style="flex:1;background:#FF4D00;padding:7px;text-align:center;font-size:7.5px;letter-spacing:.15em;text-transform:uppercase;color:white;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:3px;">GO <span style="display:flex;">${IC.arrow}</span></div>
+      <div style="flex:1;border:1.5px solid rgba(255,255,255,.2);padding:7px;text-align:center;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.6);font-family:'DM Mono',monospace;">INFO</div>
+      <div style="flex:1;background:#FF4D00;padding:7px;text-align:center;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:white;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:3px;">GO <span style="display:flex;">${IC.arrow}</span></div>
     </div>
   </div>
 </div>`,
@@ -2734,7 +2813,7 @@
   <div style="position:absolute;bottom:20px;right:20px;width:80px;height:80px;background:radial-gradient(circle,rgba(255,77,255,.08) 0%,transparent 65%);pointer-events:none;"></div>
   <!-- nav -->
   <div style="padding:9px 12px;border-bottom:1px solid rgba(61,255,208,.12);display:flex;justify-content:space-between;align-items:center;position:relative;flex-shrink:0;">
-    <div style="font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#3DFFD0;text-shadow:0 0 8px rgba(61,255,208,.6);">NEON.SYS</div>
+    <div style="font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#3DFFD0;text-shadow:0 0 8px rgba(61,255,208,.6);">NEON.SYS</div>
     <div style="display:flex;gap:5px;align-items:center;">
       <div style="width:5px;height:5px;border-radius:50%;background:#3DFFD0;box-shadow:0 0 6px #3DFFD0;"></div>
       <div style="width:5px;height:5px;border-radius:50%;background:#FF4DFF;box-shadow:0 0 6px #FF4DFF;"></div>
@@ -2748,8 +2827,8 @@
       <div style="display:flex;flex-direction:column;gap:3px;">${[88, 65, 78].map((w, i) => `<div style="height:2.5px;width:${w}%;background:rgba(61,255,208,${0.25 - i * 0.05});border-radius:1px;box-shadow:0 0 4px rgba(61,255,208,.25);"></div>`).join('')}</div>
     </div>
     <div style="display:flex;gap:6px;">
-      <div style="flex:1;border:1.5px solid rgba(61,255,208,.35);padding:7px;text-align:center;font-size:7.5px;letter-spacing:.15em;text-transform:uppercase;color:#3DFFD0;font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(61,255,208,.12);">INFO</div>
-      <div style="flex:1;background:rgba(61,255,208,.1);border:1.5px solid #3DFFD0;padding:7px;text-align:center;font-size:7.5px;letter-spacing:.15em;text-transform:uppercase;color:#3DFFD0;font-family:'DM Mono',monospace;box-shadow:0 0 12px rgba(61,255,208,.2);display:flex;align-items:center;justify-content:center;gap:3px;">GO <span style="display:flex;">${IC.arrow}</span></div>
+      <div style="flex:1;border:1.5px solid rgba(61,255,208,.35);padding:7px;text-align:center;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#3DFFD0;font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(61,255,208,.12);">INFO</div>
+      <div style="flex:1;background:rgba(61,255,208,.1);border:1.5px solid #3DFFD0;padding:7px;text-align:center;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#3DFFD0;font-family:'DM Mono',monospace;box-shadow:0 0 12px rgba(61,255,208,.2);display:flex;align-items:center;justify-content:center;gap:3px;">GO <span style="display:flex;">${IC.arrow}</span></div>
     </div>
   </div>
 </div>`,
@@ -2917,7 +2996,7 @@
         const typeface = TYPEFACES[tone] || TYPEFACES['Bold Tech'];
         const archetype = ARCHETYPES[`${frame}+${tone}`] || 'Design System';
         const tokens = getRadiusTokens(shape);
-        const vec = dnaVec || [0.7, 0.6, 0.6, 0.3, 0.6, 0.7];
+        const vec = dnaVec || [0.9, 0.75, 0.7, 0.2, 0.65, 0.85];
         const bg = palette.swatches[0].hex;
         const primary = palette.swatches[1].hex;
         const accent = palette.swatches[2].hex;
@@ -2968,7 +3047,7 @@
       </div>
       <div class="type-row">
         <div class="type-label">System</div>
-        <div class="type-meta" style="font-size:9px;">${typeface.meta}</div>
+        <div class="type-meta" style="font-size:12px;">${typeface.meta}</div>
       </div>
     </div>
   </div>
@@ -3042,6 +3121,17 @@
   </div>
 </div>`;
 
+        lastDesignSystemState = {
+          frame,
+          shape,
+          tone,
+          finish,
+          radius,
+          palette: palette.swatches.map((s) => ({ name: s.name, hex: s.hex, role: s.role })),
+          archetype: ARCHETYPES[frame + '+' + tone] || 'Design System',
+          dnaVec: vec,
+        };
+
         return `
 <div class="ds-hero">
   <div class="ds-eyebrow">Design System · Complete</div>
@@ -3098,7 +3188,7 @@ ${choicesHTML}
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:${primary};letter-spacing:.06em;">STUDIO</div>
         <div style="display:flex;gap:16px;">
-          ${['Work', 'About', 'Contact'].map((t) => `<span style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:${mutedText};">${t}</span>`).join('')}
+          ${['Work', 'About', 'Contact'].map((t) => `<span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:${mutedText};">${t}</span>`).join('')}
         </div>
       </div>
       <div>
@@ -3106,21 +3196,109 @@ ${choicesHTML}
         <div style="font-size:10px;color:${mutedText};line-height:1.6;max-width:280px;">${TYPEFACES[tone]?.body?.sample || 'Design that thinks.'}</div>
       </div>
       <div style="display:flex;gap:8px;">
-        <div style="background:${accent};color:${swatchTextColor(accent)};padding:10px 18px;border-radius:${r};font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-family:'DM Mono',monospace;display:inline-flex;align-items:center;gap:6px;">
+        <div style="background:${accent};color:${swatchTextColor(accent)};padding:10px 18px;border-radius:${r};font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-family:'DM Mono',monospace;display:inline-flex;align-items:center;gap:6px;">
           Get started
           <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M1 5h8M6 2l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div style="border:1.5px solid ${borderCol};color:${mutedText};padding:10px 18px;border-radius:${r};font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-family:'DM Mono',monospace;">
+        <div style="border:1.5px solid ${borderCol};color:${mutedText};padding:10px 18px;border-radius:${r};font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-family:'DM Mono',monospace;">
           Learn more
         </div>
       </div>
       <div style="display:flex;gap:5px;flex-wrap:wrap;">
-        ${[frame, tone, finish].map((t) => `<div style="padding:4px 10px;border-radius:${r2};border:1px solid ${borderCol};font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:${mutedText};">${t}</div>`).join('')}
+        ${[frame, tone, finish].map((t) => `<div style="padding:4px 10px;border-radius:${r2};border:1px solid ${borderCol};font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:${mutedText};">${t}</div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="live-process">
+    <div class="live-process-title">Process</div>
+    <div class="live-process-steps">
+      <div class="live-process-row">
+        <span class="live-process-step-label">1</span>
+        <button class="live-process-btn" data-action="copy-json">Copy JSON</button>
+      </div>
+      <div class="live-process-row">
+        <span class="live-process-step-label">2</span>
+        <button class="live-process-btn" data-action="copy-html">Transfer to HTML</button>
+      </div>
+      <div class="live-process-row">
+        <span class="live-process-step-label">3</span>
+        <button class="live-process-btn primary" data-action="codebase">Codebase</button>
+        <span class="live-process-divider">or</span>
+        <button class="live-process-btn primary" data-action="copy-figma">Copy for Schwep Figma</button>
       </div>
     </div>
   </div>
 </div>`;
       }
+
+      let lastDesignSystemState = null;
+
+      function getDesignSystemJSON() {
+        if (!lastDesignSystemState) return '{}';
+        return JSON.stringify(lastDesignSystemState, null, 2);
+      }
+
+      function getLiveComponentHTML() {
+        if (!lastDesignSystemState) return '';
+        const s = lastDesignSystemState;
+        const frame = s.frame || 'Bento Grid';
+        const tone = s.tone || 'Bold Tech';
+        const finish = s.finish || 'Clean Minimal';
+        const shape = s.shape || 'Soft Corners';
+        const palette = PALETTES[finish] || PALETTES['Clean Minimal'];
+        const bg = palette.swatches[0].hex;
+        const primary = palette.swatches[1].hex;
+        const accent = palette.swatches[2].hex;
+        const surface = palette.swatches[3].hex;
+        const textCol = swatchTextColor(bg);
+        const radius = s.radius || 12;
+        const r = radius + 'px';
+        const r2 = Math.round(radius * 0.6) + 'px';
+        const isDark = swatchTextColor(bg) === '#FFFFFF';
+        const mutedText = isDark ? 'rgba(255,255,255,.4)' : 'rgba(13,13,13,.4)';
+        const borderCol = isDark ? 'rgba(255,255,255,.1)' : 'rgba(13,13,13,.1)';
+        const archetype = ARCHETYPES[frame + '+' + tone] || 'Design System';
+        const navItems = ['Work', 'About', 'Contact'].map((t) => '<span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:' + mutedText + ';">' + t + '</span>').join('');
+        const tags = [frame, tone, finish].map((t) => '<div style="padding:4px 10px;border-radius:' + r2 + ';border:1px solid ' + borderCol + ';font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:' + mutedText + ';">' + t + '</div>').join('');
+        const innerHTML = '<div style="padding:20px;display:flex;flex-direction:column;gap:12px;min-height:280px;justify-content:space-between;background:' + bg + ';">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+            '<div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:13px;color:' + primary + ';letter-spacing:.06em;">STUDIO</div>' +
+            '<div style="display:flex;gap:16px;">' + navItems + '</div>' +
+          '</div>' +
+          '<div>' +
+            '<div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:clamp(22px,4vw,32px);line-height:1;letter-spacing:-.03em;color:' + textCol + ';margin-bottom:8px;">' + archetype + '</div>' +
+            '<div style="font-size:10px;color:' + mutedText + ';line-height:1.6;max-width:280px;">' + (TYPEFACES[tone]?.body?.sample || 'Design that thinks.') + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;">' +
+            '<div style="background:' + accent + ';color:' + swatchTextColor(accent) + ';padding:10px 18px;border-radius:' + r + ';font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-family:\'DM Mono\',monospace;">Get started</div>' +
+            '<div style="border:1.5px solid ' + borderCol + ';color:' + mutedText + ';padding:10px 18px;border-radius:' + r + ';font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-family:\'DM Mono\',monospace;">Learn more</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:5px;flex-wrap:wrap;">' + tags + '</div>' +
+        '</div>';
+        return innerHTML;
+      }
+
+      function copyToClipboard(text, btn) {
+        navigator.clipboard.writeText(text).then(() => {
+          const orig = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = orig; }, 2000);
+        });
+      }
+
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn || !btn.dataset.action) return;
+        const action = btn.dataset.action;
+        if (action === 'copy-json') {
+          copyToClipboard(getDesignSystemJSON(), btn);
+        } else if (action === 'copy-html' || action === 'copy-figma') {
+          copyToClipboard(getLiveComponentHTML(), btn);
+        } else if (action === 'codebase') {
+          const html = getLiveComponentHTML();
+          copyToClipboard(html, btn);
+        }
+      });
 
       function previewDesignSystem() {
         if (!st.results['Frame']) st.results['Frame'] = 'Bento Grid';
@@ -3128,7 +3306,7 @@ ${choicesHTML}
         if (!st.results['Tone']) st.results['Tone'] = 'Bold Tech';
         if (!st.results['Finish']) st.results['Finish'] = 'Clean Minimal';
         if (!dnaVec) {
-          dnaVec = [0.9, 0.8, 0.72, 0.18, 0.68, 0.85];
+          dnaVec = [0.9, 0.75, 0.7, 0.2, 0.65, 0.85];
           dnaCount = 4;
         }
         document.getElementById('ds-output').innerHTML = buildDesignSystem();
@@ -3369,18 +3547,22 @@ ${choicesHTML}
       function doSkip() {
         if (st.round >= ROUNDS.length) return;
         _activeInjected = null;
-        const round = ROUNDS[st.round];
-        st.card++;
-        if (st.card >= round.cards.length) st.card = 0;
         if (cardEl) {
           cardEl.classList.add('throwing');
           cardEl.style.transform = 'translate(0px,-600px) rotate(0deg)';
           cardEl.style.opacity = '0';
         }
         setTimeout(function () {
-          renderCard();
+          st.likedThisRound = 0;
+          st.card = 0;
+          st.round++;
+          if (st.round >= ROUNDS.length) {
+            showDone();
+            return;
+          }
           renderTracker();
-        }, 200);
+          renderCard();
+        }, 240);
       }
 
       function doNope() {
@@ -3611,16 +3793,16 @@ ${choicesHTML}
           ctxTit.textContent = 'Foundation';
           if (roundChanged) {
             ctxBod.innerHTML =
-              '<div style="display:flex;flex-direction:column;gap:10px;"><div style="font-size:8.5px;line-height:1.7;color:rgba(13,13,13,.45);">Pick your foundation layout. This seeds the DNA engine — every subsequent round reorders around your choice.</div><div style="display:flex;flex-direction:column;gap:4px;">' +
+              '<div style="display:flex;flex-direction:column;gap:10px;"><div style="font-family:\'DM Mono\',monospace;font-size:8.5px;line-height:1.7;color:rgba(13,13,13,.45);">Pick your foundation layout. This seeds the DNA engine — every subsequent round reorders around your choice.</div><div style="display:flex;flex-direction:column;gap:4px;">' +
               ['Bento Grid', 'Split Layout', 'Swiss Grid', 'Editorial']
                 .map(
                   (n) =>
-                    '<div style="font-size:8px;padding:5px 8px;background:rgba(13,13,13,.04);border-radius:5px;border:1px solid rgba(13,13,13,.08);color:rgba(13,13,13,.5);">' +
+                    '<div style="font-size:12px;padding:5px 8px;background:rgba(13,13,13,.04);border-radius:5px;border:1px solid rgba(13,13,13,.08);color:rgba(13,13,13,.5);">' +
                     n +
                     '</div>'
                 )
                 .join('') +
-              '</div><div style="font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,77,0,.65);padding-top:6px;border-top:1px solid rgba(13,13,13,.08);">No adjustments · swipe to choose</div></div>';
+              '</div><div style="font-family:\'DM Mono\',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,77,0,.65);padding-top:6px;border-top:1px solid rgba(13,13,13,.08);">No adjustments · swipe to choose</div></div>';
           }
           return;
         }
@@ -3761,15 +3943,15 @@ ${choicesHTML}
 
         const headerText =
           alts && alts.length
-            ? '<div style="font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);margin-bottom:8px;">Variants of <strong style="color:var(--ink);">' +
+            ? '<div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);margin-bottom:8px;">Variants of <strong style="color:var(--ink);">' +
               (currentName || '') +
               '</strong></div>'
-            : '<div style="font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);margin-bottom:8px;">Other options this round</div>';
+            : '<div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);margin-bottom:8px;">Other options this round</div>';
 
         return (
           headerText +
           buildAltCardsFromData(cards) +
-          '<div style="margin-top:8px;font-size:7.5px;color:rgba(13,13,13,.35);letter-spacing:.05em;line-height:1.6;">Click to load as main card —<br>then Like or Nope it.</div>'
+          '<div style="margin-top:8px;font-size:12px;color:rgba(13,13,13,.35);letter-spacing:.05em;line-height:1.6;">Click to load as main card —<br>then Like or Nope it.</div>'
         );
       }
 
@@ -3832,9 +4014,8 @@ ${choicesHTML}
         throwCard(false);
       });
       document.getElementById('btn-skip').addEventListener('click', doSkip);
-      document.getElementById('btn-again').addEventListener('click', () => {
-        window.location.href = 'index.html';
-      });
+      const btnAgain = document.getElementById('btn-again');
+      if (btnAgain) btnAgain.addEventListener('click', () => { window.location.href = 'index.html'; });
       document.getElementById('btn-back').addEventListener('click', () => {
         window.location.href = 'index.html';
       });

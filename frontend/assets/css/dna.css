@@ -56,7 +56,7 @@ body {
   cursor: pointer;
   color: rgba(13, 13, 13, 0.3);
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   padding: 6px 0;
@@ -106,7 +106,7 @@ body {
   gap: 6px;
 }
 .ds-eyebrow {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--orange);
@@ -173,7 +173,7 @@ body {
   align-items: center;
 }
 .ds-panel-tag {
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgba(13, 13, 13, 0.35);
@@ -206,7 +206,7 @@ body {
   overflow: hidden;
 }
 .swatch-name {
-  font-size: 7.5px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-weight: 500;
@@ -214,11 +214,11 @@ body {
 }
 .swatch-hex {
   font-family: 'DM Mono', monospace;
-  font-size: 8px;
+  font-size: 12px;
   opacity: 0.65;
 }
 .swatch-role {
-  font-size: 7px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   opacity: 0.5;
@@ -243,7 +243,7 @@ body {
   padding-bottom: 0;
 }
 .type-label {
-  font-size: 7.5px;
+  font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(13, 13, 13, 0.35);
@@ -254,7 +254,7 @@ body {
 }
 .type-meta {
   font-family: 'DM Mono', monospace;
-  font-size: 7.5px;
+  font-size: 12px;
   color: rgba(13, 13, 13, 0.3);
   margin-top: 3px;
 }
@@ -278,7 +278,7 @@ body {
   opacity: 0.85;
 }
 .token-name {
-  font-size: 7.5px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(13, 13, 13, 0.4);
@@ -286,7 +286,7 @@ body {
 }
 .token-val {
   font-family: 'DM Mono', monospace;
-  font-size: 8px;
+  font-size: 12px;
   color: rgba(13, 13, 13, 0.5);
 }
 
@@ -302,7 +302,7 @@ body {
   gap: 10px;
 }
 .dna-fp-label {
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(13, 13, 13, 0.4);
@@ -324,7 +324,7 @@ body {
 }
 .dna-fp-num {
   font-family: 'DM Mono', monospace;
-  font-size: 8px;
+  font-size: 9px;
   color: rgba(13, 13, 13, 0.3);
   width: 28px;
   text-align: right;
@@ -355,7 +355,7 @@ body {
   flex: 1;
 }
 .choice-chip-k {
-  font-size: 7.5px;
+  font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(13, 13, 13, 0.35);

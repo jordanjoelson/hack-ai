@@ -8,7 +8,7 @@ let st = {
   },
 };
 
-let dnaVec = [0.7, 0.6, 0.6, 0.3, 0.6, 0.7];
+let dnaVec = [0.9, 0.75, 0.7, 0.2, 0.65, 0.85];
 
 const DNA = {
   // FRAME
@@ -221,7 +221,7 @@ function buildDesignSystem() {
   const archetype = ARCHETYPES[`${frame}+${tone}`] || 'Design System';
   const radius = st.results['Radius'] || 12;
   const tokens = getRadiusTokens(shape, radius);
-  const vec = dnaVec || [0.7, 0.6, 0.6, 0.3, 0.6, 0.7];
+  const vec = dnaVec || [0.9, 0.75, 0.7, 0.2, 0.65, 0.85];
   const bg = palette.swatches[0].hex;
   const primary = palette.swatches[1].hex;
   const accent = palette.swatches[2].hex;
@@ -272,7 +272,7 @@ function buildDesignSystem() {
       </div>
       <div class="type-row">
         <div class="type-label">System</div>
-        <div class="type-meta" style="font-size:9px;">${typeface.meta}</div>
+        <div class="type-meta" style="font-size:12px;">${typeface.meta}</div>
       </div>
     </div>
   </div>
@@ -408,7 +408,7 @@ function buildLiveMockupPanel(
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:${primary};letter-spacing:.06em;">STUDIO</div>
         <div style="display:flex;gap:16px;">
-          ${['Work', 'About', 'Contact'].map((t) => `<span style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:${mutedText};">${t}</span>`).join('')}
+          ${['Work', 'About', 'Contact'].map((t) => `<span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:${mutedText};">${t}</span>`).join('')}
         </div>
       </div>
       <!-- Hero text -->
@@ -418,17 +418,17 @@ function buildLiveMockupPanel(
       </div>
       <!-- CTA row -->
       <div style="display:flex;gap:8px;">
-        <div style="background:${accent};color:${swatchTextColor(accent)};padding:10px 18px;border-radius:${r};font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-family:'DM Mono',monospace;display:inline-flex;align-items:center;gap:6px;">
+        <div style="background:${accent};color:${swatchTextColor(accent)};padding:10px 18px;border-radius:${r};font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-family:'DM Mono',monospace;display:inline-flex;align-items:center;gap:6px;">
           Get started
           <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M1 5h8M6 2l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div style="border:1.5px solid ${borderCol};color:${mutedText};padding:10px 18px;border-radius:${r};font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-family:'DM Mono',monospace;">
+        <div style="border:1.5px solid ${borderCol};color:${mutedText};padding:10px 18px;border-radius:${r};font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-family:'DM Mono',monospace;">
           Learn more
         </div>
       </div>
       <!-- Tag chips -->
       <div style="display:flex;gap:5px;flex-wrap:wrap;">
-        ${[frame, tone, finish].map((t) => `<div style="padding:4px 10px;border-radius:${r2};border:1px solid ${borderCol};font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:${mutedText};">${t}</div>`).join('')}
+        ${[frame, tone, finish].map((t) => `<div style="padding:4px 10px;border-radius:${r2};border:1px solid ${borderCol};font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:${mutedText};">${t}</div>`).join('')}
       </div>
     </div>
   </div>

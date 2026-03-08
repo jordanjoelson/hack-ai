@@ -2,86 +2,628 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>Schwep — My Collections</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;700;900&family=DM+Mono:wght@400;500&family=Playfair+Display:ital@1&family=Permanent+Marker&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="assets/css/variables.css" />
-    <link rel="stylesheet" href="assets/css/shared.css" />
-    <link rel="stylesheet" href="assets/css/archive.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schwep — Archive</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;600;700;800&display=swap');
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --orange: #ff4d00;
+        --ink: #0d0d0d;
+        --paper: #f2efe9;
+        --white: #fafaf8;
+        --border: rgba(13, 13, 13, 0.11);
+        --shadow: 0 8px 40px rgba(13, 13, 13, 0.1), 0 2px 8px rgba(13, 13, 13, 0.06);
+      }
+
+      html,
+      body {
+        height: 100%;
+        min-height: 100vh;
+        background: var(--paper);
+        font-family: 'DM Mono', monospace;
+        color: var(--ink);
+        overflow-x: hidden;
+      }
+
+      .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr;
+        grid-template-areas:
+          'header'
+          'summary'
+          'content';
+        padding: 28px 24px 32px;
+        gap: 16px;
+        max-width: 1280px;
+        margin: 0 auto;
+        align-items: start;
+      }
+
+      @media (max-width: 720px) {
+        .app {
+          padding: 20px 14px 32px;
+        }
+      }
+
+      .top-bar {
+        grid-area: header;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 20px;
+        margin-bottom: 4px;
+      }
+      .back-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: rgba(13, 13, 13, 0.3);
+        font-family: 'DM Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 6px 0;
+        transition: color 0.15s;
+      }
+      .back-btn:hover {
+        color: rgba(13, 13, 13, 0.7);
+      }
+      .back-arrow {
+        width: 28px;
+        height: 28px;
+        border: 1.5px solid rgba(13, 13, 13, 0.15);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      .back-btn:hover .back-arrow {
+        border-color: rgba(13, 13, 13, 0.35);
+        background: rgba(13, 13, 13, 0.04);
+      }
+      .engine-label {
+        font-family: 'Instrument Serif', serif;
+        font-style: italic;
+        font-size: 18px;
+        color: var(--orange);
+        letter-spacing: -0.01em;
+        opacity: 0.85;
+      }
+      .analysis-btn {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--white);
+        border: 2px solid #0d0d0d;
+        border-radius: 9px;
+        cursor: pointer;
+        color: rgba(13, 13, 13, 0.45);
+        font-family: 'DM Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 7px 13px;
+        text-decoration: none;
+        transition: all 0.15s;
+        box-shadow: 4px 4px 0 rgba(13, 13, 13, 0.15);
+      }
+      .analysis-btn:hover {
+        color: var(--ink);
+        border-color: var(--ink);
+        background: rgba(13, 13, 13, 0.04);
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0 rgba(13, 13, 13, 0.2);
+      }
+      .analysis-btn-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--orange);
+        flex-shrink: 0;
+        opacity: 0.75;
+      }
+
+      .summary-card {
+        grid-area: summary;
+        background: var(--white);
+        border-radius: 16px;
+        border: 1.5px solid var(--border);
+        padding: 18px 20px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .summary-eyebrow {
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--orange);
+      }
+      .summary-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 20px;
+        letter-spacing: -0.03em;
+        color: var(--ink);
+      }
+      .summary-subtitle {
+        font-size: 10px;
+        color: rgba(13, 13, 13, 0.6);
+        line-height: 1.5;
+        max-width: 420px;
+      }
+
+      .content-wrap {
+        grid-area: content;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .content-grid {
+        display: grid;
+        grid-template-columns: 1.6fr 1.1fr;
+        gap: 16px;
+        align-items: stretch;
+        max-height: 420px;
+      }
+      @media (max-width: 960px) {
+        .content-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .panel {
+        background: var(--white);
+        border-radius: 16px;
+        border: 1.5px solid var(--border);
+        padding: 18px 18px 16px;
+        display: flex;
+        flex-direction: column;
+      }
+      .panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 12px;
+      }
+      .panel-tag {
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(13, 13, 13, 0.35);
+      }
+      .panel-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 11px;
+        color: var(--ink);
+      }
+      .panel-body {
+        font-size: 12px;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+      }
+
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px;
+      }
+      .vision-card {
+        border-radius: 14px;
+        border: 1.5px solid var(--border);
+        overflow: hidden;
+        background: var(--white);
+        display: flex;
+        flex-direction: column;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .vision-card:hover {
+        border-color: rgba(13, 13, 13, 0.2);
+        box-shadow: 0 4px 16px rgba(13, 13, 13, 0.06);
+      }
+      .vision-preview {
+        aspect-ratio: 4/3;
+        min-height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+      }
+      .vision-preview-content {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .vision-preview-content .pv-bento,
+      .vision-preview-content .pv-split,
+      .vision-preview-content .pv-swiss,
+      .vision-preview-content .pv-editorial {
+        width: 100%;
+        max-width: 140px;
+        height: 100%;
+        max-height: 80px;
+      }
+      .vision-info {
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .vision-name {
+        font-family: 'Syne', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+      }
+      .vision-specs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 6px;
+      }
+      .vision-spec {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(13, 13, 13, 0.5);
+        padding: 2px 6px;
+        background: rgba(13, 13, 13, 0.05);
+        border-radius: 4px;
+      }
+      .vision-date {
+        font-size: 12px;
+        color: rgba(13, 13, 13, 0.4);
+      }
+      .vision-actions {
+        display: flex;
+        gap: 6px;
+        margin-top: 2px;
+      }
+      .vision-btn {
+        font-family: 'DM Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 5px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: rgba(13, 13, 13, 0.02);
+        color: rgba(13, 13, 13, 0.7);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .vision-btn:hover {
+        border-color: var(--orange);
+        color: var(--orange);
+        background: rgba(255, 77, 0, 0.04);
+      }
+      .vision-btn.delete:hover {
+        border-color: #dc2626;
+        color: #dc2626;
+        background: rgba(220, 38, 38, 0.04);
+      }
+
+      /* Preview layouts for vision cards */
+      .pv-bento { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; }
+      .pv-bento > div { background: rgba(13, 13, 13, 0.08); }
+      .pv-split { display: grid; grid-template-columns: 1.2fr 1fr; gap: 4px; }
+      .pv-split .sl { background: rgba(13, 13, 13, 0.15); }
+      .pv-split .sr { display: flex; flex-direction: column; gap: 4px; }
+      .pv-split .sr > div { flex: 1; background: rgba(13, 13, 13, 0.06); }
+      .pv-swiss { display: flex; flex-direction: column; gap: 4px; }
+      .pv-swiss > div { height: 6px; background: rgba(13, 13, 13, 0.1); }
+      .pv-swiss > div:nth-child(2) { background: var(--orange); width: 60%; }
+      .pv-editorial { display: flex; flex-direction: column; gap: 4px; }
+      .pv-editorial .pe1 { height: 12px; background: rgba(13, 13, 13, 0.2); }
+      .pv-editorial .pe2 { height: 8px; background: var(--orange); width: 40%; }
+      .pv-editorial .pe3 { flex: 1; background: rgba(13, 13, 13, 0.04); }
+
+      .empty-state {
+        margin-top: 10px;
+        font-size: 12px;
+        color: rgba(13, 13, 13, 0.45);
+      }
+      .empty-state a {
+        color: var(--orange);
+        text-decoration: none;
+      }
+
+      .dictionary-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .dictionary-term {
+        border-radius: 12px;
+        border: 1.5px solid var(--border);
+        padding: 12px 14px;
+        background: var(--white);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        transition: border-color 0.15s;
+      }
+      .dictionary-term:hover {
+        border-color: rgba(13, 13, 13, 0.18);
+      }
+      .term-category {
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--orange);
+        font-weight: 500;
+      }
+      .term-name {
+        font-family: 'Syne', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+      }
+      .term-definition {
+        font-size: 12px;
+        color: rgba(13, 13, 13, 0.7);
+        line-height: 1.55;
+      }
+
+      .library-intro {
+        font-size: 12px;
+        color: rgba(13, 13, 13, 0.6);
+        line-height: 1.5;
+        margin-bottom: 12px;
+      }
+      .library-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .filter-btn {
+        font-family: 'DM Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(13, 13, 13, 0.01);
+        color: rgba(13, 13, 13, 0.6);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .filter-btn.active {
+        background: var(--ink);
+        color: #fff;
+        border-color: var(--ink);
+      }
+      .filter-btn:hover {
+        border-color: rgba(13, 13, 13, 0.45);
+      }
+
+      .library-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 12px;
+      }
+      .library-component {
+        border-radius: 14px;
+        border: 1.5px solid var(--border);
+        padding: 14px 16px;
+        background: var(--white);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        transition: border-color 0.15s;
+      }
+      .library-component:hover {
+        border-color: rgba(13, 13, 13, 0.18);
+      }
+      .component-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .component-name {
+        font-family: 'Syne', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+      }
+      .component-category {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(13, 13, 13, 0.45);
+        flex-shrink: 0;
+      }
+      .component-example {
+        padding: 10px 12px;
+        background: rgba(13, 13, 13, 0.03);
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        font-size: 12px;
+        min-height: 36px;
+      }
+      .component-description {
+        font-size: 12px;
+        color: rgba(13, 13, 13, 0.7);
+        line-height: 1.5;
+      }
+      .component-aliases {
+        font-size: 12px;
+        color: rgba(13, 13, 13, 0.5);
+        font-style: italic;
+      }
+
+      /* Component example styles */
+      .component-example .ex-input,
+      .component-example .ex-select,
+      .component-example .ex-textarea,
+      .component-example .ex-range { width: 100%; max-width: 100%; font-size: 12px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 4px; font-family: inherit; }
+      .component-example .ex-btn { padding: 4px 10px; font-size: 12px; border-radius: 6px; border: 1px solid var(--ink); background: var(--ink); color: white; cursor: default; font-family: inherit; }
+      .component-example .ex-btn-secondary { background: transparent; color: var(--ink); }
+      .component-example .ex-badge { display: inline-block; padding: 2px 6px; font-size: 12px; border-radius: 4px; background: rgba(13,13,13,0.1); margin-right: 4px; }
+      .component-example .ex-alert { padding: 6px 10px; background: rgba(255,77,0,0.1); border: 1px solid rgba(255,77,0,0.25); border-radius: 6px; }
+      .component-example .ex-accordion-item { margin-bottom: 4px; }
+      .component-example .ex-accordion-header { padding: 4px 0; cursor: default; }
+      .component-example .ex-avatar { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--orange); color: white; font-size: 12px; margin-right: 4px; }
+      .component-example .ex-card { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+      .component-example .ex-card-header { padding: 6px 8px; background: rgba(13,13,13,0.05); font-weight: 600; font-size: 12px; }
+      .component-example .ex-card-body { padding: 6px 8px; font-size: 12px; }
+      .component-example .ex-progress-bar { height: 6px; background: rgba(13,13,13,0.1); border-radius: 99px; overflow: hidden; }
+      .component-example .ex-progress-fill { height: 100%; background: var(--orange); border-radius: 99px; }
+      .component-example .ex-nav-link { margin-right: 8px; color: rgba(13,13,13,0.6); text-decoration: none; font-size: 12px; }
+      .component-example .ex-nav-link.active { color: var(--ink); font-weight: 600; }
+      .component-example .ex-link { color: var(--orange); text-decoration: none; margin-right: 8px; font-size: 12px; }
+      .component-example .ex-list { margin: 0; padding-left: 14px; font-size: 12px; }
+      .component-example .ex-page-btn { padding: 4px 8px; margin: 0 2px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px; background: rgba(13,13,13,0.02); cursor: default; }
+      .component-example .ex-page-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+      .component-example .ex-tab { padding: 4px 10px; font-size: 12px; border: none; border-bottom: 2px solid transparent; background: none; cursor: default; font-family: inherit; }
+      .component-example .ex-tab.active { border-bottom-color: var(--orange); font-weight: 600; }
+      .component-example .ex-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+      .component-example .ex-table th, .component-example .ex-table td { padding: 4px 8px; border: 1px solid var(--border); text-align: left; }
+      .component-example .ex-quote { margin: 0; padding: 8px 12px; border-left: 3px solid var(--orange); font-style: italic; font-size: 12px; }
+      .component-example .ex-empty { text-align: center; padding: 12px; }
+      .component-example .ex-empty-icon { font-size: 18px; margin-bottom: 4px; }
+      .component-example .ex-upload-area { padding: 12px; border: 1px dashed var(--border); border-radius: 8px; text-align: center; font-size: 12px; color: rgba(13,13,13,0.5); }
+      .component-example .ex-color { display: inline-block; width: 20px; height: 20px; border-radius: 4px; margin-right: 4px; }
+      .component-example .ex-seg-btn, .component-example .ex-btn-small { padding: 4px 8px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px; background: rgba(13,13,13,0.02); margin-right: 4px; font-family: inherit; }
+      .component-example .ex-seg-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+      .component-example .ex-form { display: flex; flex-direction: column; gap: 6px; }
+      .component-example .ex-checkbox, .component-example .ex-radio { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-bottom: 4px; }
+      .component-example .ex-fieldset { border: 1px solid var(--border); border-radius: 6px; padding: 8px; }
+      .component-example .ex-fieldset legend { font-size: 12px; padding: 0 4px; }
+      .component-example .ex-header, .component-example .ex-footer { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; font-size: 12px; }
+      .component-example .ex-hero { padding: 8px; text-align: center; }
+      .component-example .ex-hero h1 { font-size: 10px; margin: 0 0 4px; }
+      .component-example .ex-hero p { font-size: 12px; margin: 0; opacity: 0.7; }
+      .component-example .ex-drawer { padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; }
+      .component-example .ex-modal-content { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--white); font-size: 12px; }
+      .component-example .ex-skeleton-line { height: 6px; background: rgba(13,13,13,0.1); border-radius: 4px; margin-bottom: 4px; }
+      .component-example .ex-skeleton-line.short { width: 60%; }
+      .component-example .ex-separator { height: 1px; background: var(--border); margin: 4px 0; }
+      .component-example .ex-toast { padding: 6px 10px; background: var(--ink); color: white; border-radius: 6px; font-size: 12px; }
+      .component-example .ex-file { display: flex; align-items: center; gap: 8px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; }
+      .component-example .ex-image-placeholder { width: 40px; height: 30px; background: rgba(13,13,13,0.08); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+      .component-example .ex-rating { font-size: 12px; }
+    </style>
   </head>
   <body>
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loading-screen">
-      <img src="assets/images/schwep.png" alt="Schwep Logo" class="loading-logo" />
+    <div class="app">
+      <div class="top-bar">
+        <button class="back-btn" id="btn-back">
+          <div class="back-arrow">
+            <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
+              <path
+                d="M6 1L1 6l5 5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <span>Back</span>
+        </button>
+        <button class="analysis-btn" type="button">
+          <div class="analysis-btn-dot"></div>
+          archive
+        </button>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-eyebrow">Design DNA</div>
+        <div class="summary-title">Your archive</div>
+        <div class="summary-subtitle">
+          Saved visions, learned language, and reusable components generated from your design DNA.
+        </div>
+      </div>
+
+      <div class="content-wrap">
+        <div class="content-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-tag">Saved Visions</div>
+                <div class="panel-title">Gallery</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="gallery-grid" id="gallery-grid"></div>
+              <div class="empty-state" id="empty-state">
+                <p>No saved visions yet. <a href="engine.html">Create your first vision →</a></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-tag">Language</div>
+                <div class="panel-title">Design dictionary</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="dictionary-grid" id="dictionary-grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-tag">System</div>
+            <div class="panel-title">Component library</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <p class="library-intro">
+            UI components and patterns for building interfaces with your design DNA.
+          </p>
+          <div class="library-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="form">Form</button>
+            <button class="filter-btn" data-filter="navigation">Navigation</button>
+            <button class="filter-btn" data-filter="feedback">Feedback</button>
+            <button class="filter-btn" data-filter="layout">Layout</button>
+            <button class="filter-btn" data-filter="content">Content</button>
+          </div>
+          <div class="library-grid" id="library-grid"></div>
+        </div>
+        </div>
+      </div>
     </div>
 
-    <div class="sky"></div>
-
-    <!-- Clouds -->
-    <img class="cloud cl-bl" src="assets/images/transparentcloud1.png" alt="Cloud" />
-    <img class="cloud cl-br" src="assets/images/transparentcloud2.png" alt="Cloud" />
-    <img class="cloud cl-ml" src="assets/images/transparentcloud1.png" alt="Cloud" />
-    <img class="cloud cl-mr" src="assets/images/transparentcloud2.png" alt="Cloud" />
-
-    <!-- Navigation -->
-    <nav class="archive-nav">
-      <a href="index.html" class="nav-logo"><img src="assets/images/schwep.png" alt="schwep" /></a>
-      <div class="nav-actions">
-        <a class="btn-new" href="engine.html">New Vision</a>
-      </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="archive-container">
-      <div class="archive-header">
-        <div class="archive-eyebrow">My Collections</div>
-        <h1 class="archive-title">The <em>Archive</em></h1>
-        <p class="archive-subtitle">Your saved design visions and learned technical terms.</p>
-      </div>
-
-      <!-- Gallery Section -->
-      <section class="gallery-section">
-        <h2 class="section-title">Saved Visions</h2>
-        <div class="gallery-grid" id="gallery-grid">
-          <!-- Visions will be loaded dynamically -->
-        </div>
-        <div class="empty-state" id="empty-state">
-          <p>No saved visions yet. <a href="engine.html">Create your first vision →</a></p>
-        </div>
-      </section>
-
-      <!-- Design Dictionary Section -->
-      <section class="dictionary-section">
-        <h2 class="section-title">Design Dictionary</h2>
-        <p class="dictionary-intro">Technical terms you've learned through your design journey.</p>
-        <div class="dictionary-grid" id="dictionary-grid">
-          <!-- Terms will be loaded dynamically -->
-        </div>
-      </section>
-
-      <!-- Component Library Section -->
-      <section class="library-section">
-        <h2 class="section-title">Component Library</h2>
-        <p class="library-intro">
-          UI components and patterns for building interfaces with your design DNA.
-        </p>
-        <div class="library-filters">
-          <button class="filter-btn active" data-filter="all">All</button>
-          <button class="filter-btn" data-filter="form">Form</button>
-          <button class="filter-btn" data-filter="navigation">Navigation</button>
-          <button class="filter-btn" data-filter="feedback">Feedback</button>
-          <button class="filter-btn" data-filter="layout">Layout</button>
-          <button class="filter-btn" data-filter="content">Content</button>
-        </div>
-        <div class="library-grid" id="library-grid">
-          <!-- Components will be loaded dynamically -->
-        </div>
-      </section>
-    </main>
-
     <script src="assets/js/archive.js"></script>
+    <script>
+      document.getElementById('btn-back').addEventListener('click', () => {
+        window.location.href = 'index.html';
+      });
+    </script>
   </body>
 </html>
