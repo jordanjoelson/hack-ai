@@ -1,156 +1,2812 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Schwep — The Engine</title>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/variables.css">
-  <link rel="stylesheet" href="assets/css/engine.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schwep — The Engine</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;600;700;800&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --orange: #FF4D00;
+  --ink: #0D0D0D;
+  --paper: #F2EFE9;
+  --white: #FAFAF8;
+  --border: rgba(13,13,13,0.11);
+  --shadow: 0 8px 40px rgba(13,13,13,0.10), 0 2px 8px rgba(13,13,13,0.06);
+}
+
+html,body {
+  height:100%; min-height:100vh;
+  background: var(--paper);
+  font-family: 'DM Mono', monospace;
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* ════════════════════════════════════
+   LAYOUT — three-column wide layout
+   Left: DNA panel | Center: deck | Right: context editor
+════════════════════════════════════ */
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px 1fr 280px;
+  grid-template-rows: auto auto minmax(400px, 1fr);
+  grid-template-areas:
+    "header header header"
+    "left   top    right"
+    "left   center right";
+  padding: 28px 24px 32px;
+  gap: 0 20px;
+  max-width: 1280px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* On narrow screens collapse to single column */
+@media (max-width: 720px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "top"
+      "left"
+      "center"
+      "right";
+    padding: 20px 14px 32px;
+  }
+}
+
+/* ════════════════════════════════════
+   TOP HEADER BAR
+════════════════════════════════════ */
+.top-bar {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 20px 0;
+  margin-bottom: 4px;
+}
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(13,13,13,.3);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 6px 0;
+  transition: color .15s;
+}
+.back-btn:hover { color: rgba(13,13,13,.7); }
+.back-arrow {
+  width: 28px; height: 28px;
+  border: 1.5px solid rgba(13,13,13,.15);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .15s, background .15s;
+}
+.back-btn:hover .back-arrow {
+  border-color: rgba(13,13,13,.35);
+  background: rgba(13,13,13,.04);
+}
+.engine-label {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--orange);
+  letter-spacing: -.01em;
+  opacity: .85;
+}
+
+/* ════════════════════════════════════
+   TRACKER — slim strip
+════════════════════════════════════ */
+.tracker {
+  grid-area: top;
+  background: var(--white);
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  padding: 14px 18px 12px;
+  position: relative;
+}
+
+/* — top micro row — */
+.tr-head {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom: 10px;
+}
+.tr-tag {
+  font-size:9px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--orange); font-weight:500;
+}
+.tr-title {
+  font-family:'Syne',sans-serif; font-weight:700;
+  font-size:13px; color:var(--ink);
+}
+
+/* — TRACK AREA — */
+.track-area { position:relative; }
+
+/* Segment bar track:
+   Round 1 = 1 bar (fills fully on 1 like)
+   Rounds 2-4 = 3 bars each (fill 1 per like)
+   4 rounds × dots between = labels row
+*/
+.seg-row {
+  display:flex; align-items:center; gap:0;
+}
+/* each round block */
+.seg-group {
+  display:flex; align-items:center; gap:3px; flex:1;
+}
+.seg-group:not(:last-child)::after {
+  content:''; width:1px; height:10px;
+  background:rgba(13,13,13,.15); flex-shrink:0; margin:0 4px;
+}
+/* individual bars within a group */
+.seg-bar {
+  flex:1; height:4px; border-radius:99px;
+  background:rgba(13,13,13,.1); overflow:hidden; position:relative;
+}
+.seg-bar.filled { background:var(--orange); }
+.seg-bar.filling {
+  background:rgba(13,13,13,.1);
+}
+.seg-bar.filling::after {
+  content:''; position:absolute; left:0;top:0;right:0;bottom:0;
+  border-radius:99px; background:var(--orange);
+  animation:bar-fill .4s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes bar-fill { from{transform:scaleX(0);transform-origin:left} to{transform:scaleX(1);transform-origin:left} }
+
+/* dot node between rounds */
+.seg-node {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0;
+  background:var(--paper); border:2px solid rgba(13,13,13,.15);
+  transition:border-color .3s, background .3s;
+  margin:0 2px;
+}
+.seg-node.done { background:var(--ink); border-color:var(--ink); }
+.seg-node.active { border-color:var(--orange); box-shadow:0 0 0 3px rgba(255,77,0,.12); }
+
+/* labels */
+.seg-labels {
+  display:flex; justify-content:space-between; margin-top:6px;
+}
+.seg-lbl {
+  font-size:8px; letter-spacing:.1em; text-transform:uppercase;
+  color:rgba(13,13,13,.25); flex:1; text-align:center;
+  transition:color .25s; white-space:nowrap;
+}
+.seg-lbl.active { color:var(--orange); font-weight:500; }
+.seg-lbl.done   { color:rgba(13,13,13,.5); font-weight:500; }
+
+/* no old stuff needed */
+.tr-bottom { display:none; }
+.result-pills { display:none; }
+
+/* ════════════════════════════════════
+   DNA AXIS BAR
+════════════════════════════════════ */
+.dna-bar-wrap {
+  grid-area: left;
+  background: var(--white);
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  padding: 14px 16px;
+  display: block;  /* always visible, content fades in */
+  position: sticky;
+  top: 28px;
+  align-self: start;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .4s ease;
+}
+.dna-bar-wrap.visible {
+  opacity: 1;
+  pointer-events: auto;
+  animation: none; /* no slide-in needed now */
+}
+.dna-bar-label {
+  font-size:8px; letter-spacing:.15em; text-transform:uppercase;
+  color:rgba(13,13,13,.3); margin-bottom:8px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.dna-bar-label span { color:var(--orange); }
+.dna-axes {
+  display:flex; flex-direction:column; gap:5px;
+}
+.dna-axis-row {
+  display:flex; align-items:center; gap:8px;
+}
+.dna-axis-name {
+  font-size:7.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:rgba(13,13,13,.35); width:52px; flex-shrink:0; text-align:right;
+}
+.dna-axis-track {
+  flex:1; height:3px; background:rgba(13,13,13,.07); border-radius:99px; overflow:hidden;
+}
+.dna-axis-fill {
+  height:100%; border-radius:99px; background:var(--orange);
+  transition:width .6s cubic-bezier(.34,1.56,.64,1);
+}
+.dna-axis-val {
+  font-family:'DM Mono',monospace; font-size:7px; color:rgba(13,13,13,.25);
+  width:22px; text-align:right; flex-shrink:0; letter-spacing:.02em;
+}
+
+/* DNA bar wrap entrance animation */
+.dna-bar-wrap.visible {
+  animation: dna-appear .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes dna-appear {
+  from { opacity:0; transform:translateY(-6px) scale(.97); }
+  to   { opacity:1; transform:none; }
+}
+
+/* ── Deck-reorder toast ── */
+.dna-toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--ink); color:white;
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.12em;
+  text-transform:uppercase; padding:9px 18px; border-radius:99px;
+  pointer-events:none; opacity:0; z-index:999; white-space:nowrap;
+  transition: opacity .25s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
+  display:flex; align-items:center; gap:7px;
+}
+.dna-toast.show {
+  opacity:1; transform:translateX(-50%) translateY(0);
+}
+.dna-toast-dot {
+  width:6px; height:6px; border-radius:50%; background:var(--orange);
+  flex-shrink:0;
+}
+
+/* ════════════════════════════════════
+   SWIPE DECK
+════════════════════════════════════ */
+.deck-area {
+  grid-area: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  min-height: 520px;
+  align-self: stretch;
+}
+
+.deck-wrap {
+  position:relative; width:100%; height:460px;
+  display:block;
+  flex-shrink: 0;
+}
+
+/* Ghost cards behind */
+.deck-wrap::before,
+.deck-wrap::after {
+  content:''; position:absolute;
+  border-radius:20px; border:1.5px solid var(--border);
+  background:var(--white);
+}
+.deck-wrap::after {
+  width:88%; height:92%; bottom:0; z-index:1;
+  box-shadow:0 2px 12px rgba(13,13,13,.05);
+  transform:translateY(10px) scale(0.97);
+}
+.deck-wrap::before {
+  width:80%; height:84%; bottom:0; z-index:0;
+  transform:translateY(20px) scale(0.94);
+  box-shadow:0 2px 8px rgba(13,13,13,.04);
+}
+
+.card {
+  position:absolute; z-index:2;
+  top:0; left:0; right:0; bottom:0;
+  width:100%; height:100%;
+  background:var(--white);
+  border-radius:20px;
+  border:1.5px solid var(--border);
+  box-shadow:var(--shadow);
+  cursor:grab; user-select:none;
+  transition:box-shadow .15s;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+.card.is-dragging { cursor:grabbing; transition:none; }
+.card.snapping {
+  transition:transform .42s cubic-bezier(.34,1.56,.64,1), opacity .42s ease;
+}
+.card.throwing {
+  transition:transform .42s ease-in, opacity .42s ease;
+}
+
+/* — CARD VISUAL AREA — */
+.card-vis {
+  flex:1;
+  min-height:280px;
+  background:rgba(13,13,13,.03);
+  border-bottom:1px solid var(--border);
+  position:relative; overflow:hidden;
+  display:flex; align-items:stretch;
+}
+.card-vis > div {
+  width:100%;
+  height:100%;
+  min-height:100%;
+}
+
+/* — CARD INFO — */
+.card-info {
+  padding:18px 22px;
+  display:flex; align-items:flex-end; justify-content:space-between;
+}
+.card-text { display:flex; flex-direction:column; gap:4px; }
+.card-name {
+  font-family:'Syne',sans-serif; font-weight:700;
+  font-size:20px; letter-spacing:-.01em;
+}
+.card-desc {
+  font-size:10.5px; letter-spacing:.02em;
+  color:rgba(13,13,13,.45); line-height:1.5;
+  max-width:240px;
+}
+.card-right {
+  display:flex; flex-direction:column; align-items:flex-end;
+  justify-content:flex-end; gap:6px; flex-shrink:0;
+}
+.dna-badge {
+  font-family:'DM Mono',monospace; font-size:8px;
+  letter-spacing:.1em; text-transform:uppercase;
+  font-weight:500; text-align:right;
+  transition:opacity .35s ease, color .35s ease;
+  white-space:nowrap;
+  display:flex; align-items:center; gap:5px;
+}
+.dna-badge::before {
+  content:'';
+  width:5px; height:5px; border-radius:50%;
+  background:currentColor; flex-shrink:0;
+  opacity:.7;
+}
+
+/* Swipe indicators */
+.ind {
+  position:absolute; top:18px; padding:6px 14px;
+  border-radius:8px; font-family:'DM Mono',monospace;
+  font-size:11px; font-weight:500; letter-spacing:.1em;
+  text-transform:uppercase; pointer-events:none;
+  opacity:0; z-index:20; transition:none;
+}
+.ind-like {
+  left:16px; background:rgba(34,197,94,.12);
+  border:2px solid rgba(34,197,94,.6); color:#16a34a;
+}
+.ind-nope {
+  right:16px; background:rgba(239,68,68,.1);
+  border:2px solid rgba(239,68,68,.5); color:#dc2626;
+}
+
+/* ════════════════════════════════════
+   BUTTON ROW
+════════════════════════════════════ */
+.btn-row {
+  display:flex; gap:10px; align-items:stretch;
+  width:100%;
+}
+.swipe-btn {
+  flex:1;
+  font-family:'DM Mono',monospace; font-size:11px;
+  font-weight:500; letter-spacing:.1em; text-transform:uppercase;
+  padding:15px 10px; border-radius:14px; cursor:pointer;
+  border:1.5px solid var(--border);
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  transition:all .15s ease; background:var(--white);
+  min-height:52px;
+}
+.swipe-btn:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(13,13,13,.1); }
+.swipe-btn.nope { color:rgba(13,13,13,.6); }
+.swipe-btn.nope:hover { border-color:#dc2626; color:#dc2626; background:rgba(239,68,68,.04); }
+.swipe-btn.like {
+  background:var(--ink); color:white; border-color:var(--ink);
+}
+.swipe-btn.like:hover { background:var(--orange); border-color:var(--orange); }
+.swipe-btn.skip {
+  flex:0.6; color:rgba(13,13,13,.4); font-size:10px; gap:4px;
+}
+.swipe-btn.skip:hover { color:var(--ink); border-color:rgba(13,13,13,.3); background:rgba(13,13,13,.03); }
+.btn-icon { font-size:17px; line-height:1; }
+
+/* ════════════════════════════════════
+   FLASH OVERLAY
+════════════════════════════════════ */
+#flash {
+  position:fixed;inset:0;pointer-events:none;z-index:999;
+  opacity:0; transition:opacity .08s;
+}
+#flash.on { opacity:1; transition:none; }
+#flash.flash-green  { background:rgba(34,197,94,.08); }
+#flash.flash-red    { background:rgba(239,68,68,.07); }
+
+/* ════════════════════════════════════
+   PREVIEW STYLES
+════════════════════════════════════ */
+.pv-root {
+  width:100%; height:100%; padding:18px;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* Bento */
+.pv-bento {
+  display:grid; gap:8px; width:100%; height:100%;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr;
+}
+.pv-bento .b0 {
+  grid-column:1; grid-row:1/3;
+  background:linear-gradient(135deg,rgba(255,77,0,.13),rgba(255,144,232,.08));
+  border:1.5px solid rgba(255,77,0,.2);
+  border-radius:10px; padding:16px;
+  display:flex; flex-direction:column; justify-content:flex-end; gap:8px;
+}
+.pv-bento .b1 {
+  background:rgba(255,255,255,.7); border:1.5px solid rgba(13,13,13,.09);
+  border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+}
+.pv-bento .b2 {
+  background:rgba(255,255,255,.5); border:1.5px solid rgba(13,13,13,.08);
+  border-radius:10px; padding:12px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.bar { height:8px; border-radius:4px; background:rgba(13,13,13,.18); }
+.bar.sm { width:60%; background:rgba(13,13,13,.13); }
+.bar.lg { width:85%; }
+.bar.accent { background:rgba(255,77,0,.6); width:50%; height:22px; border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;color:rgba(13,13,13,.7);letter-spacing:.08em;}
+.bar.title { width:70%; height:18px; border-radius:5px; background:rgba(13,13,13,.3); }
+
+/* Split */
+.pv-split {
+  display:grid; grid-template-columns:55% 45%; gap:10px;
+  width:100%; height:100%;
+}
+.pv-split .sl {
+  background:linear-gradient(135deg,rgba(13,13,13,.92),rgba(13,13,13,.7));
+  border-radius:10px; padding:16px;
+  display:flex; flex-direction:column; gap:10px; justify-content:center;
+}
+.pv-split .sr {
+  display:flex; flex-direction:column; gap:8px;
+}
+.pv-split .sr-card {
+  flex:1; background:rgba(255,255,255,.7); border:1.5px solid rgba(13,13,13,.09);
+  border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:6px;
+}
+.wbar { height:9px; border-radius:3px; background:rgba(255,255,255,.25); }
+.wbar.w80 { width:80%; }
+.wbar.w60 { width:60%; }
+.wbar.w50 { width:50%; }
+.wbar.btn { width:55%; height:16px; border-radius:5px; background:var(--orange); opacity:.8; }
+.dbar { height:8px; border-radius:3px; background:rgba(13,13,13,.2); }
+.dbar.w90 { width:90%; }
+.dbar.w70 { width:70%; }
+.dbar.w55 { width:55%; }
+
+/* Swiss */
+.pv-swiss {
+  display:flex; flex-direction:column; gap:10px;
+  width:100%; padding:24px 20px;
+}
+.sw-rule { height:3px; background:rgba(13,13,13,.35); border-radius:2px; width:100%; }
+.sw-head { height:22px; border-radius:3px; background:rgba(13,13,13,.4); width:55%; }
+.sw-accent { height:4px; background:var(--orange); border-radius:2px; width:38%; }
+.sw-line { height:8px; border-radius:2px; background:rgba(13,13,13,.18); }
+.sw-line.w85 { width:85%; }
+.sw-line.w70 { width:70%; }
+.sw-line.w50 { width:50%; }
+.sw-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; }
+.sw-cell { height:40px; border:1.5px solid rgba(13,13,13,.12); border-radius:4px; }
+
+/* Editorial */
+.pv-editorial {
+  display:grid;
+  grid-template-rows:auto 1fr;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  width:100%; height:100%;
+}
+.pv-editorial .ed-header {
+  grid-column:1/3; background:rgba(13,13,13,.9);
+  border-radius:8px; height:32px;
+  display:flex; align-items:center; padding:0 14px; gap:10px;
+}
+.ed-dot { width:7px; height:7px; border-radius:50%; background:var(--orange); }
+.ed-line { flex:1; height:2px; background:rgba(255,255,255,.15); border-radius:1px; }
+.pv-editorial .ed-big {
+  background:var(--orange); border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Syne',sans-serif; font-weight:800;
+  font-size:28px; color:white; letter-spacing:-.02em;
+}
+.pv-editorial .ed-copy {
+  border-radius:8px; border:1.5px solid rgba(13,13,13,.1);
+  background:rgba(255,255,255,.5);
+  padding:12px; display:flex; flex-direction:column; gap:7px;
+}
+
+/* Shape previews */
+.pv-shape {
+  width:100%; height:100%; display:flex; align-items:center;
+  justify-content:center; flex-direction:column; gap:16px; padding:20px;
+}
+
+.shape-demo {
+  width:100%; max-width:280px;
+  background:white; border:2px solid rgba(13,13,13,.14);
+  padding:20px; display:flex; flex-direction:column; gap:12px;
+  position:relative;
+}
+.shape-demo .sh-bar { height:16px; background:rgba(13,13,13,.18); }
+.shape-demo .sh-bar.w80 { width:80%; }
+.shape-demo .sh-bar.w60 { width:60%; }
+.shape-demo .sh-btn {
+  height:32px; width:50%; background:rgba(13,13,13,.85);
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; color:white; letter-spacing:.1em; font-weight:500;
+}
+.shape-label {
+  font-family:'DM Mono',monospace; font-size:10px;
+  letter-spacing:.15em; text-transform:uppercase; color:rgba(13,13,13,.35);
+}
+
+/* Tone previews */
+.pv-tone {
+  width:100%; height:100%; display:flex; align-items:center;
+  justify-content:center; padding:24px;
+}
+.tone-boldtech {
+  font-family:'Syne',sans-serif; font-weight:800;
+  font-size:42px; color:var(--ink); letter-spacing:-.04em;
+  line-height:1; text-align:left; width:100%;
+}
+.tone-boldtech span { display:block; color:var(--orange); }
+.tone-edmod {
+  font-family:'Georgia',serif;
+  font-size:28px; color:var(--ink); letter-spacing:.01em;
+  font-style:italic; line-height:1.3; text-align:center;
+  border-top:1px solid rgba(13,13,13,.2);
+  border-bottom:1px solid rgba(13,13,13,.2);
+  padding:16px 0; width:100%;
+}
+.tone-rawmono {
+  font-family:'Courier New',monospace; font-size:13px;
+  color:rgba(255,255,255,.9); background:rgba(13,13,13,.92);
+  padding:20px; border-radius:6px; width:100%;
+  line-height:1.7; letter-spacing:.04em;
+}
+.tone-rawmono .cursor { display:inline-block; width:8px; height:14px;
+  background:var(--orange); margin-left:2px; animation:blink .9s step-end infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.tone-hand {
+  font-family:'Georgia',serif; font-size:32px; color:var(--ink);
+  line-height:1.3; text-align:center; width:100%;
+  transform:rotate(-1.5deg);
+  border-bottom:2.5px solid var(--orange); padding-bottom:8px;
+}
+
+/* Finish previews */
+.pv-finish {
+  width:100%; height:100%; position:relative; overflow:hidden;
+}
+.fin-grain {
+  background:rgba(255,255,255,.94); width:100%; height:100%;
+  position:relative; display:flex; flex-direction:column;
+  justify-content:center; padding:24px; gap:14px;
+}
+.fin-grain::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+}
+.fin-grain .g-bar { height:10px; border-radius:2px; background:rgba(13,13,13,.22); }
+.fin-grain .g-bar.w75 { width:75%; }
+.fin-grain .g-bar.w90 { width:90%; }
+.fin-grain .g-bar.sm { height:7px; background:rgba(13,13,13,.15); width:55%; }
+.fin-grain .g-badge {
+  width:fit-content; padding:5px 14px; border-radius:3px;
+  background:rgba(13,13,13,.08); border:1px solid rgba(13,13,13,.15);
+  font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  color:rgba(13,13,13,.5);
+}
+
+.fin-clean {
+  background:#fff; width:100%; height:100%;
+  display:flex; flex-direction:column; justify-content:center;
+  padding:28px; gap:14px;
+}
+.fin-clean .c-head {
+  font-family:'Syne',sans-serif; font-weight:700;
+  font-size:18px; color:var(--ink); letter-spacing:-.01em;
+}
+.fin-clean .c-bar { height:9px; border-radius:4px; background:rgba(13,13,13,.1); }
+.fin-clean .c-bar.w80 { width:80%; }
+.fin-clean .c-bar.w65 { width:65%; }
+.fin-clean .c-divider { height:1px; background:rgba(13,13,13,.06); width:100%; }
+.fin-clean .c-pill {
+  width:fit-content; padding:6px 14px; border-radius:4px;
+  border:1.5px solid rgba(13,13,13,.12);
+  font-size:9px; letter-spacing:.12em; text-transform:uppercase;
+}
+
+.fin-gritty {
+  background:rgba(13,13,13,.93); width:100%; height:100%;
+  position:relative; display:flex; flex-direction:column;
+  justify-content:center; padding:24px; gap:10px;
+}
+.fin-gritty::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,.015) 2px, rgba(255,255,255,.015) 4px);
+}
+.fin-gritty .gr-bar { height:4px; border-radius:2px; background:rgba(255,255,255,.35); }
+.fin-gritty .gr-bar.w100 { width:100%; }
+.fin-gritty .gr-bar.w70 { width:70%; background:rgba(255,255,255,.25); }
+.fin-gritty .gr-bar.w85 { width:85%; background:rgba(255,255,255,.3); }
+.fin-gritty .gr-tag {
+  font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  color:rgba(255,255,255,.4); margin-top:6px;
+}
+.fin-gritty .gr-accent {
+  width:28px; height:3px; background:var(--orange); border-radius:1px;
+}
+
+.fin-neon {
+  background:rgba(4,4,20,.97); width:100%; height:100%;
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:12px; padding:24px;
+  position:relative;
+}
+.fin-neon::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 50%, rgba(61,255,208,.06) 0%, transparent 65%);
+  pointer-events:none;
+}
+.neon-text {
+  font-family:'Syne',sans-serif; font-weight:800; font-size:32px;
+  color:#3DFFD0; letter-spacing:.08em;
+  text-shadow:0 0 20px rgba(61,255,208,.8), 0 0 40px rgba(61,255,208,.4);
+  position:relative; z-index:1;
+}
+.neon-bar { height:2px; border-radius:99px; position:relative; z-index:1; }
+.neon-bar.nb1 { width:80%; background:rgba(61,255,208,.5); box-shadow:0 0 8px rgba(61,255,208,.5); }
+.neon-bar.nb2 { width:55%; background:rgba(255,77,255,.4); box-shadow:0 0 8px rgba(255,77,255,.4); }
+.neon-dot { width:8px; height:8px; border-radius:50%; background:#3DFFD0;
+  box-shadow:0 0 12px rgba(61,255,208,.9); margin-top:4px; z-index:1; }
+
+/* ════════════════════════════════════
+   RIGHT CONTEXT PANEL
+   Shows on Shape/Tone/Finish rounds
+════════════════════════════════════ */
+.ctx-panel {
+  grid-area: right;
+  background: var(--white);
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  padding: 14px 16px;
+  position: sticky;
+  top: 28px;
+  align-self: start;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .4s ease, transform .4s cubic-bezier(.34,1.56,.64,1);
+  transform: translateX(8px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ctx-panel.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+.ctx-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.ctx-tag {
+  font-size: 8px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--orange); font-weight: 500;
+}
+.ctx-title {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 13px; color: var(--ink);
+}
+
+/* ── Radius editor (Shape round) ── */
+.radius-preview-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0 4px;
+}
+.radius-demo {
+  width: 80px; height: 56px;
+  background: var(--ink);
+  transition: border-radius .25s cubic-bezier(.34,1.56,.64,1);
+}
+.radius-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rad-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rad-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.rad-label {
+  font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(13,13,13,.4);
+}
+.rad-val {
+  font-size: 8px; letter-spacing: .05em;
+  color: var(--ink); font-family: 'DM Mono', monospace;
+}
+input[type=range].rad-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  background: rgba(13,13,13,.1);
+  border-radius: 99px;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range].rad-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 2px solid var(--white);
+  box-shadow: 0 1px 4px rgba(13,13,13,.25);
+  transition: background .15s;
+}
+input[type=range].rad-slider::-webkit-slider-thumb:hover {
+  background: var(--orange);
+}
+input[type=range].rad-slider::-moz-range-thumb {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 2px solid var(--white);
+  box-shadow: 0 1px 4px rgba(13,13,13,.25);
+  cursor: pointer;
+}
+.radius-presets {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.rad-preset {
+  font-family: 'DM Mono', monospace;
+  font-size: 7.5px; letter-spacing: .08em; text-transform: uppercase;
+  padding: 4px 8px; border-radius: 5px; cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: transparent; color: rgba(13,13,13,.5);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.rad-preset:hover, .rad-preset.active {
+  border-color: var(--ink); color: var(--ink); background: rgba(13,13,13,.04);
+}
+.rad-preset.active {
+  background: var(--ink); color: white; border-color: var(--ink);
+}
+
+/* ── Tone alternatives (Tone round) ── */
+.alt-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.alt-card {
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+  display: flex;
+  flex-direction: column;
+}
+.alt-card:hover { border-color: rgba(13,13,13,.3); box-shadow: 0 2px 10px rgba(13,13,13,.08); }
+.alt-card.selected { border-color: var(--orange); box-shadow: 0 0 0 2px rgba(255,77,0,.12); }
+.alt-thumb {
+  height: 54px;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+}
+.alt-info {
+  padding: 6px 9px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.alt-name {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 9.5px; color: var(--ink);
+}
+.alt-match {
+  font-size: 7px; letter-spacing: .06em;
+  color: rgba(13,13,13,.38); line-height: 1.3;
+  max-width: 90px; text-align: right;
+}
+.alt-cta {
+  font-family: 'DM Mono', monospace;
+  font-size: 7.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(13,13,13,.3);
+  padding: 5px 9px 6px;
+  border-top: 1px solid var(--border);
+  transition: color .15s, background .15s;
+}
+.alt-card:hover .alt-cta { color: var(--orange); background: rgba(255,77,0,.03); }
+.alt-card.selected .alt-cta { color: var(--orange); }
+
+/* ════════════════════════════════════
+   DONE STATE / DESIGN SYSTEM OUTPUT
+════════════════════════════════════ */
+.done-screen {
+  display: none;
+  flex-direction: column;
+  gap: 0;
+  grid-column: 1 / -1;
+  grid-row: 2 / -1;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 0 60px;
+}
+.done-screen.show { display: flex; }
+.app.done-mode {
+  grid-template-rows: auto 0 1fr;
+}
+
+.ds-hero {
+  padding: 12px 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ds-eyebrow {
+  font-size: 9px; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--orange); font-weight: 500;
+}
+.ds-headline {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 52px; letter-spacing: -.04em; line-height: .95;
+  color: var(--ink);
+}
+.ds-archetype {
+  font-family: 'Syne', sans-serif; font-style: italic;
+  font-size: 52px; letter-spacing: -.04em; line-height: .95;
+  color: var(--orange);
+}
+.ds-tagline {
+  font-size: 11px; letter-spacing: .06em; color: rgba(13,13,13,.4);
+  margin-top: 6px; line-height: 1.6;
+}
+
+.ds-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.ds-grid-wide {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.ds-full { margin-bottom: 12px; }
+
+.ds-panel {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.ds-panel-head {
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.ds-panel-tag {
+  font-size: 8px; letter-spacing: .18em; text-transform: uppercase;
+  color: rgba(13,13,13,.35);
+}
+.ds-panel-val {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 11px; color: var(--ink);
+}
+.ds-panel-body { padding: 16px 18px; }
+
+.palette-row {
+  display: flex; gap: 6px; align-items: stretch;
+}
+.swatch {
+  flex: 1; border-radius: 10px; position: relative;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 8px; min-height: 72px; overflow: hidden;
+}
+.swatch-name {
+  font-size: 7.5px; letter-spacing: .06em; text-transform: uppercase;
+  font-weight: 500; margin-bottom: 1px;
+}
+.swatch-hex {
+  font-family: 'DM Mono', monospace; font-size: 8px; opacity: .65;
+}
+.swatch-role {
+  font-size: 7px; letter-spacing: .1em; text-transform: uppercase;
+  opacity: .5; margin-top: 2px;
+}
+
+.type-specimen {
+  display: flex; flex-direction: column; gap: 14px;
+}
+.type-row {
+  display: flex; flex-direction: column; gap: 2px;
+  padding-bottom: 14px; border-bottom: 1px solid var(--border);
+}
+.type-row:last-child { border-bottom: none; padding-bottom: 0; }
+.type-label {
+  font-size: 7.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(13,13,13,.35);
+}
+.type-display {
+  line-height: 1.1; color: var(--ink);
+}
+.type-meta {
+  font-family: 'DM Mono', monospace; font-size: 7.5px;
+  color: rgba(13,13,13,.3); margin-top: 3px;
+}
+
+.token-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 10px;
+}
+.token-item {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.token-shape {
+  width: 40px; height: 40px;
+  background: var(--ink); opacity: .85;
+}
+.token-name {
+  font-size: 7.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(13,13,13,.4); text-align: center;
+}
+.token-val {
+  font-family: 'DM Mono', monospace; font-size: 8px;
+  color: rgba(13,13,13,.5);
+}
+
+.dna-fp {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.dna-fp-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.dna-fp-label {
+  font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(13,13,13,.4); width: 70px; flex-shrink: 0; text-align: right;
+}
+.dna-fp-bar-bg {
+  flex: 1; height: 6px; background: rgba(13,13,13,.07); border-radius: 99px;
+  overflow: hidden;
+}
+.dna-fp-bar-fill {
+  height: 100%; border-radius: 99px;
+  background: var(--orange);
+}
+.dna-fp-num {
+  font-family: 'DM Mono', monospace; font-size: 8px;
+  color: rgba(13,13,13,.3); width: 28px; text-align: right;
+}
+
+.mockup-wrap {
+  height: 200px; border-radius: 10px; overflow: hidden;
+  position: relative;
+}
+
+.choices-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.choice-chip {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 14px; border-radius: 10px;
+  background: rgba(13,13,13,.04); border: 1.5px solid var(--border);
+  flex: 1;
+}
+.choice-chip-k {
+  font-size: 7.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(13,13,13,.35);
+}
+.choice-chip-v {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 12px; color: var(--ink);
+}
+
+.done-btn {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase;
+  padding: 14px 32px; border-radius: 12px; cursor: pointer;
+  background: var(--ink); color: white; border: none;
+  transition: all .15s; margin-top: 12px; align-self: flex-start;
+}
+.done-btn:hover { background: var(--orange); }
+
+</style>
 </head>
 <body>
-  <!-- Loading Screen -->
-  <div class="loading-screen" id="loading-screen">
-    <img src="assets/images/schwep.png" alt="Schwep Logo" class="loading-logo">
-  </div>
 
-  <div class="flash" id="flash"></div>
-  <div class="sky"></div>
-  
-  <!-- Clouds -->
-  <img class="cloud cl-bl" src="assets/images/transparentcloud1.png" alt="Cloud">
-  <img class="cloud cl-br" src="assets/images/transparentcloud2.png" alt="Cloud">
-  <img class="cloud cl-ml" src="assets/images/transparentcloud1.png" alt="Cloud">
-  <img class="cloud cl-mr" src="assets/images/transparentcloud2.png" alt="Cloud">
+<div id="flash"></div>
+<div class="dna-toast" id="dna-toast">
+  <div class="dna-toast-dot"></div>
+  <span id="dna-toast-msg">Deck reordered by DNA</span>
+</div>
 
-  <!-- HUD -->
-  <div class="hud">
-    <a href="index.html" class="hud-logo"><img src="assets/images/schwep.png" alt="schwep"></a>
-    <div class="track-wrap">
-      <div class="track-line"></div>
-      <div class="track-stops">
-        <div class="tstop" data-l="Frame"></div>
-        <div class="tstop" data-l="Shape"></div>
-        <div class="tstop" data-l="Tone"></div>
-        <div class="tstop" data-l="Finish"></div>
+<div class="app">
+
+  <!-- ══ TOP BAR ══ -->
+  <div class="top-bar">
+    <button class="back-btn" id="btn-back">
+      <div class="back-arrow">
+        <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
+          <path d="M6 1L1 6l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
-      <img class="track-blimp" src="assets/images/MARTYBLIMP.png" alt="Blimp" id="blimp">
+      <span>Redo</span>
+    </button>
+  </div>
+
+  <!-- ══ TRACKER ══ -->
+  <div class="tracker" id="tracker">
+    <div class="tr-head">
+      <span class="tr-tag" id="tr-tag">Round 01</span>
+      <span class="tr-title" id="tr-title">The Frame</span>
     </div>
-    <div class="hud-label">
-      Round <b id="round-num">1</b>
-      <span class="skip-count" id="skip-count" style="margin-left: 16px; opacity: 0.6; font-size: 0.5rem;">Skips: <b id="skip-remaining">1</b></span>
+    <div class="track-area">
+      <div class="seg-row" id="seg-row"><!-- built by JS --></div>
+      <div class="seg-labels" id="seg-labels"><!-- built by JS --></div>
     </div>
   </div>
 
-  <!-- STAGE -->
-  <div class="stage">
-    <div class="rhead">
-      <div class="rhead-eye" id="round-label">Round 01</div>
-      <h1 class="rhead-title" id="round-title">Bento Grid</h1>
+  <!-- ══ DNA AXIS BAR ══ -->
+  <div class="dna-bar-wrap" id="dna-bar-wrap">
+    <div class="ctx-head" style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:4px;">
+      <div class="ctx-tag">Design DNA</div>
+      <div class="ctx-title">Style Profile</div>
     </div>
+    <div style="font-size:8px;letter-spacing:.05em;color:rgba(13,13,13,.4);margin-bottom:8px;line-height:1.4;" id="dna-bar-sub">building your profile...</div>
+    <div class="dna-axes" id="dna-axes"></div>
+  </div>
 
-    <!-- ARENA — the swipe zone -->
-    <div class="arena">
-      <div class="ghost ghost-2"></div>
-      <div class="ghost ghost-1"></div>
-      <div class="scard" id="card">
-        <div class="scard-vis" id="card-vis">
-          <!-- Preview content will be injected here -->
-        </div>
-        <div class="scard-body">
-          <div class="scard-name-wrapper">
-            <div class="scard-name" id="card-name">Bento Grid</div>
-            <div class="ind ind-like">LIKE</div>
-            <div class="ind ind-nope">NOPE</div>
+  <!-- ══ SWIPE DECK ══ -->
+  <div class="deck-area" id="deck-area">
+    <div class="deck-wrap">
+      <div class="card" id="card">
+        <div class="ind ind-like" id="ind-like">✓ Like</div>
+        <div class="ind ind-nope" id="ind-nope">✕ Nope</div>
+        <div class="card-vis" id="card-vis"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(13,13,13,.04);font-size:14px;color:rgba(13,13,13,.4);">Loading...</div></div>
+        <div class="card-info">
+          <div class="card-text">
+            <div class="card-name" id="card-name">Bento Grid</div>
+            <div class="card-desc" id="card-desc">Modular grid with varied card sizes and visual hierarchy.</div>
           </div>
-          <div class="scard-desc" id="card-desc">A modular grid system with varied card sizes creating visual hierarchy.</div>
-          <div class="scard-hint">Swipe or click buttons</div>
+          <div class="card-right">
+            <div class="dna-badge" id="dna-badge" style="opacity:0"></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- SWIPE BUTTONS -->
-    <div class="swipe-btns">
-      <div class="sb-wrapper">
-        <button class="sb sb-nope" id="btn-nope">✕</button>
-        <div class="sb-lbl">Nope</div>
-      </div>
-      <div class="sb-wrapper">
-        <button class="sb sb-skip" id="btn-skip">⊘</button>
-        <div class="sb-lbl">Skip</div>
-      </div>
-      <div class="sb-wrapper">
-        <button class="sb sb-like" id="btn-like">✓</button>
-        <div class="sb-lbl">Like</div>
-      </div>
+    <!-- Buttons -->
+    <div class="btn-row">
+      <button class="swipe-btn nope" id="btn-nope">
+        <span class="btn-icon">✕</span> Nope
+      </button>
+      <button class="swipe-btn skip" id="btn-skip" title="Skip (↑)">
+        <span class="btn-icon">↕</span>
+        <span>Skip</span>
+      </button>
+      <button class="swipe-btn like" id="btn-like">
+        <span class="btn-icon">✓</span> Like
+      </button>
     </div>
   </div>
 
-  <!-- SHAPE OVERLAY (only appears in Round 2) -->
-  <div class="shape-overlay" id="shape-overlay">
-    <div class="shape-glass">
-      <div class="sg-head">
-        <div class="sg-title">Corner Radius</div>
-        <div class="sg-val" id="radius-val">12px</div>
+  <!-- ══ RIGHT CONTEXT PANEL ══ -->
+  <div class="ctx-panel" id="ctx-panel">
+    <div class="ctx-head">
+      <div class="ctx-tag" id="ctx-tag">Shape</div>
+      <div class="ctx-title" id="ctx-title">Radius Editor</div>
+    </div>
+    <div id="ctx-body"><!-- populated by JS per round --></div>
+  </div>
+
+  <!-- ══ DONE ══ -->
+  <div class="done-screen" id="done-screen">
+    <div id="ds-output"><!-- built by showDone() / previewDesignSystem() --></div>
+    <button class="done-btn" id="btn-again">↺ Start Over</button>
+  </div>
+
+</div>
+
+<script>
+console.log('Schwep engine loading');
+// ══════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════
+// ══════════════════════════════════════
+//  DNA FEATURE VECTORS
+//  6 axes: structure · edge · weight · warmth · energy · digital
+//  Each in [0,1]. Cosine similarity drives card ordering from round 2+.
+// ══════════════════════════════════════
+//                               struct  edge  weight  warmth  energy  digital
+const DNA = {
+  // FRAME
+  'Bento Grid':       [0.90,  0.75,  0.70,   0.20,   0.65,   0.85],
+  'Split Layout':     [0.70,  0.55,  0.75,   0.35,   0.60,   0.65],
+  'Swiss Grid':       [0.95,  0.80,  0.60,   0.15,   0.45,   0.75],
+  'Editorial':        [0.50,  0.30,  0.55,   0.60,   0.40,   0.30],
+  // SHAPE
+  'Sharp Corners':    [0.90,  0.95,  0.80,   0.10,   0.70,   0.80],
+  'Soft Corners':     [0.55,  0.35,  0.45,   0.65,   0.40,   0.45],
+  'Round Corners':    [0.45,  0.25,  0.40,   0.70,   0.45,   0.40],
+  'Pill Shape':       [0.30,  0.10,  0.35,   0.80,   0.55,   0.35],
+  // TONE
+  'Bold Tech':        [0.85,  0.85,  0.90,   0.10,   0.85,   0.90],
+  'Editorial Modern': [0.60,  0.40,  0.55,   0.55,   0.35,   0.30],
+  'Raw Mono':         [0.75,  0.70,  0.65,   0.15,   0.75,   0.95],
+  'Handwritten':      [0.20,  0.10,  0.35,   0.90,   0.50,   0.10],
+  // FINISH
+  'Grain Texture':    [0.35,  0.30,  0.40,   0.80,   0.45,   0.20],
+  'Clean Minimal':    [0.80,  0.60,  0.50,   0.25,   0.40,   0.65],
+  'Gritty Edge':      [0.65,  0.80,  0.75,   0.20,   0.80,   0.70],
+  'Neon Glow':        [0.70,  0.65,  0.70,   0.10,   0.95,   0.95],
+};
+
+function cosineSim(a, b) {
+  let dot = 0, ma = 0, mb = 0;
+  for (let i = 0; i < a.length; i++) { dot += a[i]*b[i]; ma += a[i]*a[i]; mb += b[i]*b[i]; }
+  return dot / (Math.sqrt(ma) * Math.sqrt(mb) + 1e-9);
+}
+
+function vecAdd(a, b) { return a.map((v,i) => v + b[i]); }
+function vecScale(a, s) { return a.map(v => v * s); }
+
+// Ordinal labels for match scores shown on card
+function matchLabel(score) {
+  if (score >= 0.97) return { label:'Perfect match', color:'#16a34a' };
+  if (score >= 0.92) return { label:'Strong match',  color:'#15803d' };
+  if (score >= 0.85) return { label:'Good match',    color:'#65a30d' };
+  if (score >= 0.75) return { label:'Compatible',    color:'rgba(13,13,13,.4)' };
+  return                     { label:'Contrast pick', color:'rgba(13,13,13,.3)' };
+}
+
+// ──────────────────────────────────────
+//  MASTER CARD CATALOG
+//  All cards defined once. The engine
+//  re-orders them each round using DNA.
+// ──────────────────────────────────────
+const CATALOG = {
+  Frame: [
+    { name:'Bento Grid',    desc:'Modular grid with varied card sizes and visual hierarchy.',   preview:'bento' },
+    { name:'Split Layout',  desc:'Asymmetric two-column with dominant and secondary sections.',  preview:'split' },
+    { name:'Swiss Grid',    desc:'Clean structured grid with precise spacing and alignment.',    preview:'swiss' },
+    { name:'Editorial',     desc:'Magazine-style layout with large typography and white space.', preview:'editorial' },
+  ],
+  Shape: [
+    { name:'Sharp Corners', desc:'Crisp geometric edges — 0px border radius.',   preview:'sharp' },
+    { name:'Soft Corners',  desc:'Gentle curves — 8px border radius.',           preview:'soft' },
+    { name:'Round Corners', desc:'Smooth rounded edges — 12px border radius.',   preview:'round' },
+    { name:'Pill Shape',    desc:'Fully rounded corners — 24px+ border radius.', preview:'pill' },
+  ],
+  Tone: [
+    { name:'Bold Tech',        desc:'Strong confident typography with high contrast.',     preview:'boldtech' },
+    { name:'Editorial Modern', desc:'Elegant serif typography with refined spacing.',      preview:'edmod' },
+    { name:'Raw Mono',         desc:'Monospace typewriter aesthetic with raw energy.',     preview:'rawmono' },
+    { name:'Handwritten',      desc:'Playful personal script with organic flow.',          preview:'hand' },
+  ],
+  Finish: [
+    { name:'Grain Texture', desc:'Subtle film grain overlay for vintage warmth.',       preview:'grain' },
+    { name:'Clean Minimal', desc:'Pure untextured surface with perfect clarity.',       preview:'clean' },
+    { name:'Gritty Edge',   desc:'Rough textured finish with raw character.',           preview:'gritty' },
+    { name:'Neon Glow',     desc:'Vibrant neon effects with glowing highlights.',       preview:'neon' },
+  ],
+};
+
+const ROUND_KEYS = ['Frame','Shape','Tone','Finish'];
+const ROUND_TITLES = { Frame:'The Frame', Shape:'The Shape', Tone:'The Tone', Finish:'The Finish' };
+
+// Build ROUNDS dynamically — reordered by DNA engine each time
+let ROUNDS = ROUND_KEYS.map(k => ({
+  label: k,
+  title: ROUND_TITLES[k],
+  cards: [...CATALOG[k]],   // default order; engine re-sorts from round 2+
+}));
+
+// ══════════════════════════════════════
+//  DNA ENGINE
+//
+//  6 axes: Structure · Edge · Weight · Warmth · Energy · Digital
+//  Each in [0,1]. After every like, the running-average DNA vector
+//  is updated. At each round boundary, all future rounds are re-sorted
+//  by cosine similarity to that vector.
+//
+//  Cards are never hidden — they're reordered. The best-matching
+//  card appears first. A badge on the card shows the match quality.
+
+// ══════════════════════════════════════
+const DNA_AXES = ['Structure','Edge','Weight','Warmth','Energy','Digital'];
+
+let dnaVec   = null;  // running-average feature vector, null until first like
+let dnaCount = 0;     // number of likes fed so far
+
+// Update the DNA vector with a new liked card (running average)
+function feedDNA(cardName) {
+  const v = DNA[cardName];
+  if (!v) return;
+  if (!dnaVec) {
+    dnaVec = [...v];
+    dnaCount = 1;
+  } else {
+    dnaVec = dnaVec.map((x, i) => (x * dnaCount + v[i]) / (dnaCount + 1));
+    dnaCount++;
+  }
+}
+
+// Re-score a round's full catalog by cosine similarity to dnaVec,
+// sort best-first, and attach .score + .matchInfo to each card object.
+function scoredCards(roundKey) {
+  const cards = CATALOG[roundKey].map(card => ({ ...card }));
+  if (!dnaVec) return cards;
+  cards.forEach(card => {
+    const v = DNA[card.name];
+    card.score     = v ? cosineSim(dnaVec, v) : 0.5;
+    card.matchInfo = matchLabel(card.score);
+  });
+  cards.sort((a, b) => b.score - a.score);
+  return cards;
+}
+
+// Re-sort every future round immediately after a round completes.
+// Round 0 (Frame) is never re-sorted — it's the seed.
+function recalcDeck() {
+  ROUND_KEYS.forEach((key, ri) => {
+    if (ri <= st.round) return;  // only future rounds
+    ROUNDS[ri].cards = scoredCards(key);
+  });
+  // Tell the user the deck was just reshuffled by their DNA
+  const nextRound = ROUNDS[st.round + 1];
+  if (nextRound) {
+    const topCard = nextRound.cards[0];
+    showToast(`${nextRound.label} reordered · ${topCard.name} first`);
+  }
+}
+
+let _toastTimer = null;
+function showToast(msg) {
+  const toast = document.getElementById('dna-toast');
+  const msgEl = document.getElementById('dna-toast-msg');
+  if (!toast || !msgEl) return;
+  msgEl.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+}
+
+// ─── DNA PANEL ────────────────────────────────────────────────────────────────
+// Shown below tracker from round 2 onward.
+// Renders 6 axis bars showing the current DNA vector in real time.
+function renderDNABar() {
+  const wrap = document.getElementById('dna-bar-wrap');
+  if (!wrap) return;
+
+  if (!dnaVec || st.round < 1) {
+    wrap.classList.remove('visible');
+    return;
+  }
+
+  wrap.classList.add('visible');
+
+  // Sub-label: summarise what the DNA "wants"
+  const topAxis   = DNA_AXES[dnaVec.indexOf(Math.max(...dnaVec))];
+  const lowAxis   = DNA_AXES[dnaVec.indexOf(Math.min(...dnaVec))];
+  document.getElementById('dna-bar-sub').textContent =
+    `high ${topAxis.toLowerCase()} · low ${lowAxis.toLowerCase()}`;
+
+  // Build / update axis rows
+  const axesEl = document.getElementById('dna-axes');
+  // Build once; update widths each call
+  if (axesEl.children.length !== DNA_AXES.length) {
+    axesEl.innerHTML = DNA_AXES.map((ax, i) => `
+      <div class="dna-axis-row">
+        <div class="dna-axis-name">${ax}</div>
+        <div class="dna-axis-track">
+          <div class="dna-axis-fill" id="dna-ax-${i}" style="width:0%"></div>
+        </div>
+        <div class="dna-axis-val" id="dna-ax-v-${i}"></div>
+      </div>`).join('');
+  }
+  DNA_AXES.forEach((_, i) => {
+    const pct = Math.round(dnaVec[i] * 100);
+    const fill = document.getElementById(`dna-ax-${i}`);
+    const val  = document.getElementById(`dna-ax-v-${i}`);
+    if (fill) fill.style.width = pct + '%';
+    if (val)  val.textContent  = pct;
+  });
+}
+
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+
+let st = {
+  round: 0,
+  card:  0,
+  likedThisRound: 0,
+  likedTotal: 0,
+  nopedTotal: 0,
+  results: {},
+};
+
+let dragging=false, startX=0, startY=0, curX=0, curY=0;
+let cardEl, indLike, indNope;
+let _ctxLastKey = null, _ctxLastCard = -1;
+
+let _activeInjected = null;
+
+const radState = { tl:8, tr:8, bl:8, br:8 };
+
+
+// Alt options keyed exactly to card names in CATALOG
+const TONE_ALTS = {
+  'Bold Tech': [
+    { name:'Bold Condensed', desc:'Tight uppercase, heavy weight', preview:'boldtech' },
+    { name:'Tech Serif',     desc:'Sharp slab with industrial edge', preview:'edmod' },
+    { name:'Display Mono',   desc:'Wide mono, strong presence', preview:'rawmono' },
+  ],
+  'Editorial Modern': [
+    { name:'Classic Serif',  desc:'Traditional editorial elegance', preview:'edmod' },
+    { name:'Refined Sans',   desc:'Geometric editorial spacing', preview:'swiss' },
+    { name:'Literary',       desc:'Old-style, warm rhythm', preview:'hand' },
+  ],
+  'Raw Mono': [
+    { name:'Code Brutal',    desc:'Fixed-width, zero decoration', preview:'rawmono' },
+    { name:'Dot Matrix',     desc:'Bitmap aesthetic, retro grid', preview:'boldtech' },
+    { name:'Print Mono',     desc:'Typewriter, worn and authentic', preview:'hand' },
+  ],
+  'Handwritten': [
+    { name:'Casual Script',  desc:'Relaxed, personal, inviting', preview:'hand' },
+    { name:'Chalk Board',    desc:'Textured chalk on dark ground', preview:'rawmono' },
+    { name:'Stamp Press',    desc:'Uneven ink, pressed character', preview:'grain' },
+  ],
+};
+
+const FINISH_ALTS = {
+  'Grain Texture': [
+    { name:'Fine Film Grain', desc:'Barely-there 35mm texture', preview:'grain' },
+    { name:'Heavy Grain',     desc:'Bold photographic grain',   preview:'gritty' },
+    { name:'Linen Texture',   desc:'Woven fabric surface feel', preview:'grain' },
+  ],
+  'Clean Minimal': [
+    { name:'Matte White',  desc:'No gloss, pure surface',      preview:'clean' },
+    { name:'Off-White',    desc:'Warm tint, slightly creamy',  preview:'swiss' },
+    { name:'Ghost Glass',  desc:'Translucent frosted feel',    preview:'clean' },
+  ],
+  'Gritty Edge': [
+    { name:'Torn Paper',   desc:'Rough edge, analog energy',   preview:'gritty' },
+    { name:'Spray Paint',  desc:'Uneven coverage, street feel',preview:'grain' },
+    { name:'Halftone',     desc:'Print dots, punk aesthetic',  preview:'rawmono' },
+  ],
+  'Neon Glow': [
+    { name:'Cyberpunk',    desc:'Multi-color neon, dense glow',preview:'neon' },
+    { name:'Mono Neon',    desc:'Single-color phosphor beam',  preview:'rawmono' },
+    { name:'Holographic',  desc:'Iridescent spectrum shift',   preview:'neon' },
+  ],
+};
+
+
+function flash(c) {
+  const f=document.getElementById('flash');
+  if (!f) return;
+  f.className=''; f.classList.add('flash-'+c,'on');
+  setTimeout(()=>f.classList.remove('on'),100);
+}
+
+
+const IC = {
+  arrow:  `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 5h8M6 2l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  star:   `<svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M5 1l1.12 2.27 2.5.36-1.81 1.76.43 2.49L5 6.75 2.76 7.88l.43-2.49L1.38 3.63l2.5-.36z"/></svg>`,
+  grid:   `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="3.5" height="3.5" rx="0.5" fill="currentColor" opacity=".7"/><rect x="5.5" y="1" width="3.5" height="3.5" rx="0.5" fill="currentColor" opacity=".4"/><rect x="1" y="5.5" width="3.5" height="3.5" rx="0.5" fill="currentColor" opacity=".4"/><rect x="5.5" y="5.5" width="3.5" height="3.5" rx="0.5" fill="currentColor"/></svg>`,
+  menu:   `<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 1h8M1 4h6M1 7h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+  heart:  `<svg width="10" height="9" viewBox="0 0 10 9" fill="currentColor"><path d="M5 8S1 5.5 1 3a2 2 0 0 1 4-0.2A2 2 0 0 1 9 3c0 2.5-4 5-4 5z"/></svg>`,
+  plus:   `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  chart:  `<svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 9l2.5-3 2.5 2 2.5-5L11 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  user:   `<svg width="10" height="11" viewBox="0 0 10 11" fill="none"><circle cx="5" cy="3.5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 10c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+  sun:    `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M5 1v1M5 8v1M1 5h1M8 5h1M2.1 2.1l.7.7M7.2 7.2l.7.7M7.9 2.1l-.7.7M2.8 7.2l-.7.7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+  zap:    `<svg width="9" height="12" viewBox="0 0 9 12" fill="currentColor"><path d="M5 0L0 7h4l-1 5 5-7H4z"/></svg>`,
+  check:  `<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  img:    `<svg width="12" height="10" viewBox="0 0 12 10" fill="none"><rect x="1" y="1" width="10" height="8" rx="1" stroke="currentColor" stroke-width="1.1"/><circle cx="4" cy="4" r="1" fill="currentColor" opacity=".5"/><path d="M1 7l3-2.5 2 2 2-2.5 3 3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/></svg>`,
+};
+
+function ic(name, color='currentColor', size=10) {
+  return IC[name] || '';
+}
+
+function makePreview(type) {
+  const map = {
+
+// ─── FRAME: BENTO GRID ────────────────────────────────────────────────────────
+bento: `<div style="width:100%;height:100%;padding:10px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:55% 45%;gap:7px;background:#F2EFE9;">
+  <!-- hero cell -->
+  <div style="grid-row:1/3;background:#0D0D0D;border-radius:10px;padding:13px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative;">
+    <div style="position:absolute;top:-15px;right:-15px;width:70px;height:70px;border-radius:50%;background:rgba(255,77,0,.18);"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:7px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.3);">Dashboard</div>
+      <div style="color:rgba(255,255,255,.4);display:flex;align-items:center;">${IC.grid}</div>
+    </div>
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;line-height:1.1;color:white;margin-bottom:6px;">Your<br><span style="color:#FF4D00;">metrics</span><br>live.</div>
+      <div style="display:flex;gap:2px;align-items:flex-end;height:22px;margin-bottom:8px;">
+        ${[30,50,38,70,55,90,72].map(h=>`<div style="flex:1;background:rgba(255,77,0,${0.4+h/200});border-radius:2px 2px 0 0;height:${h}%;"></div>`).join('')}
       </div>
-      <div class="sg-presets">
-        <div class="sp-pill" data-r="0">
-          <div class="sp-box"></div>
-          Sharp
-        </div>
-        <div class="sp-pill" data-r="8">
-          <div class="sp-box"></div>
-          Soft
-        </div>
-        <div class="sp-pill on" data-r="12">
-          <div class="sp-box"></div>
-          Round
-        </div>
-        <div class="sp-pill" data-r="24">
-          <div class="sp-box"></div>
-          Pill
-        </div>
-      </div>
-      <div class="sg-slider-row">
-        <div class="sg-label">Radius</div>
-        <input type="range" class="rslider" id="radius-slider" min="0" max="32" value="12">
+      <div style="display:inline-flex;align-items:center;gap:5px;background:#FF4D00;border-radius:5px;padding:5px 9px;">
+        <span style="font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:white;font-weight:600;">Explore</span>
+        <span style="color:white;display:flex;">${IC.arrow}</span>
       </div>
     </div>
   </div>
-
-  <!-- FINALE -->
-  <div class="finale" id="finale">
-    <div class="fc">
-      <div class="fc-top">
-        <img class="fc-logo" src="assets/images/schwep.png" alt="Schwep">
-        <div class="fc-sub">Your Design DNA</div>
-      </div>
-      <div class="fc-panel">
-        <div class="fc-ph">Results</div>
-        <div class="fc-row">
-          <span class="fc-k">Frame:</span>
-          <span class="fc-v" id="result-frame">-</span>
-        </div>
-        <div class="fc-row">
-          <span class="fc-k">Shape:</span>
-          <span class="fc-v" id="result-shape">-</span>
-        </div>
-        <div class="fc-row">
-          <span class="fc-k">Tone:</span>
-          <span class="fc-v" id="result-tone">-</span>
-        </div>
-        <div class="fc-row">
-          <span class="fc-k">Finish:</span>
-          <span class="fc-v" id="result-finish">-</span>
-        </div>
-      </div>
+  <!-- stat cell -->
+  <div style="background:white;border-radius:10px;padding:10px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(13,13,13,.07);">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);">Users</div>
+      <span style="color:#FF4D00;display:flex;">${IC.chart}</span>
     </div>
-    <div class="fa">
-      <button class="btn-copy" id="btn-copy">Copy DNA Code</button>
-      <button class="btn-again" id="btn-again">Start Over</button>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#0D0D0D;line-height:1;">12.4k</div>
+    <div style="font-size:7px;color:#16a34a;display:flex;align-items:center;gap:2px;">↑ 18% <span style="color:rgba(13,13,13,.3);">this week</span></div>
+  </div>
+  <!-- action cell -->
+  <div style="background:rgba(255,77,0,.08);border:1.5px solid rgba(255,77,0,.2);border-radius:10px;padding:10px;display:flex;align-items:center;gap:8px;">
+    <div style="width:28px;height:28px;background:#FF4D00;border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0;">${IC.zap}</div>
+    <div>
+      <div style="font-size:8px;font-weight:700;color:#0D0D0D;letter-spacing:.02em;">Quick action</div>
+      <div style="font-size:7px;color:rgba(13,13,13,.4);margin-top:1px;">Get started →</div>
     </div>
   </div>
+</div>`,
 
-  <script src="assets/js/engine.js"></script>
-</body>
-</html>
+// ─── FRAME: SPLIT LAYOUT ──────────────────────────────────────────────────────
+split: `<div style="width:100%;height:100%;padding:10px;display:grid;grid-template-columns:56% 44%;gap:8px;background:#F2EFE9;">
+  <!-- left hero -->
+  <div style="background:linear-gradient(155deg,#0D0D0D 0%,#1c1c1c 100%);border-radius:10px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative;">
+    <div style="position:absolute;bottom:-20px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,77,0,.1);"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:7px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.3);">Featured</div>
+      <div style="color:rgba(255,255,255,.3);display:flex;">${IC.menu}</div>
+    </div>
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:white;line-height:1.15;margin-bottom:7px;">Design<br>that<br><em style="color:#FF4D00;font-style:normal;">works.</em></div>
+      <div style="font-size:7.5px;color:rgba(255,255,255,.4);line-height:1.5;margin-bottom:10px;">Built for people who care about every detail.</div>
+      <div style="display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.2);border-radius:5px;padding:5px 10px;">
+        <span style="font-size:7.5px;color:rgba(255,255,255,.7);letter-spacing:.06em;">Read more</span>
+        <span style="color:#FF4D00;display:flex;">${IC.arrow}</span>
+      </div>
+    </div>
+  </div>
+  <!-- right stacked cards -->
+  <div style="display:flex;flex-direction:column;gap:7px;">
+    ${[['🎨','Color theory','Palette systems'],['📐','Grid math','Spacing logic'],['✦','Typography','Type pairing']].map(([ic,t,s])=>`
+    <div style="flex:1;background:white;border:1px solid rgba(13,13,13,.08);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px;">
+      <div style="width:26px;height:26px;background:rgba(13,13,13,.05);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">${ic}</div>
+      <div style="min-width:0;">
+        <div style="font-size:8.5px;font-weight:700;color:#0D0D0D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t}</div>
+        <div style="font-size:7px;color:rgba(13,13,13,.4);margin-top:1px;">${s}</div>
+      </div>
+    </div>`).join('')}
+  </div>
+</div>`,
+
+// ─── FRAME: SWISS GRID ────────────────────────────────────────────────────────
+swiss: `<div style="width:100%;height:100%;background:white;display:flex;flex-direction:column;overflow:hidden;">
+  <!-- nav -->
+  <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #0D0D0D;">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:11px;letter-spacing:.08em;">STUDIO</div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      ${['Work','About','Contact'].map(t=>`<span style="font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.4);">${t}</span>`).join('')}
+      <div style="width:22px;height:22px;border:1.5px solid #0D0D0D;display:flex;align-items:center;justify-content:center;">${IC.plus}</div>
+    </div>
+  </div>
+  <!-- body -->
+  <div style="flex:1;display:grid;grid-template-columns:90px 1fr;gap:0;overflow:hidden;">
+    <!-- sidebar index -->
+    <div style="border-right:1px solid rgba(13,13,13,.1);padding:12px;display:flex;flex-direction:column;gap:6px;">
+      <div style="font-size:7px;letter-spacing:.15em;text-transform:uppercase;color:#FF4D00;margin-bottom:2px;">Index</div>
+      ${['01 Grid','02 Type','03 Color','04 Motion'].map((t,i)=>`<div style="font-size:7.5px;color:${i===0?'#0D0D0D':'rgba(13,13,13,.4)'};padding:3px 0;border-bottom:1px solid rgba(13,13,13,.06);${i===0?'font-weight:600;':''}">${t}</div>`).join('')}
+    </div>
+    <!-- main content -->
+    <div style="padding:12px;display:flex;flex-direction:column;justify-content:space-between;">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;line-height:.95;letter-spacing:-.03em;color:#0D0D0D;margin-bottom:5px;">THE<br>GRID<br><span style="color:#FF4D00;">RULES.</span></div>
+        <div style="width:28px;height:3px;background:#FF4D00;border-radius:1px;margin-bottom:8px;"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        ${[95,78,85,62].map(w=>`<div style="height:4px;width:${w}%;background:rgba(13,13,13,.1);border-radius:1px;"></div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>`,
+
+// ─── FRAME: EDITORIAL ─────────────────────────────────────────────────────────
+editorial: `<div style="width:100%;height:100%;background:#FAFAF8;display:flex;flex-direction:column;overflow:hidden;">
+  <!-- masthead -->
+  <div style="background:#0D0D0D;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #FF4D00;">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:9px;color:white;letter-spacing:.12em;text-transform:uppercase;">The Journal</div>
+    <div style="font-size:7px;letter-spacing:.12em;color:rgba(255,255,255,.35);text-transform:uppercase;">Issue 12</div>
+  </div>
+  <!-- content -->
+  <div style="flex:1;padding:11px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr;gap:8px;overflow:hidden;">
+    <div style="grid-column:1/3;font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:#FF4D00;border-bottom:1px solid rgba(255,77,0,.2);padding-bottom:5px;">Design — Long Read</div>
+    <!-- headline -->
+    <div style="display:flex;flex-direction:column;justify-content:space-between;">
+      <div style="font-family:'Georgia',serif;font-size:17px;line-height:1.2;font-weight:700;color:#0D0D0D;">The<br><em style="color:#FF4D00;">future</em><br>of form.</div>
+      <div style="font-size:7px;font-style:italic;color:rgba(13,13,13,.4);font-family:'Georgia',serif;">by the editors</div>
+    </div>
+    <!-- image placeholder + body -->
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div style="flex:1;background:rgba(13,13,13,.07);border-radius:4px;display:flex;align-items:center;justify-content:center;color:rgba(13,13,13,.2);">${IC.img}</div>
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        ${[90,75,85].map(w=>`<div style="height:4px;width:${w}%;background:rgba(13,13,13,.1);border-radius:1px;"></div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>`,
+
+// ─── SHAPE: SHARP (0px) ───────────────────────────────────────────────────────
+sharp: `<div style="width:100%;height:100%;background:#EEEEF0;padding:14px;display:flex;align-items:center;justify-content:center;">
+  <div style="width:100%;background:white;border:2px solid #0D0D0D;overflow:hidden;">
+    <!-- header -->
+    <div style="background:#0D0D0D;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:9px;color:white;letter-spacing:.08em;">STUDIO</div>
+      <div style="color:rgba(255,255,255,.5);display:flex;">${IC.menu}</div>
+    </div>
+    <div style="padding:13px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:-.02em;line-height:1.05;color:#0D0D0D;">SHARP<br>EDGES.</div>
+      <div style="display:flex;flex-direction:column;gap:3px;">${[90,70].map(w=>`<div style="height:6px;width:${w}%;background:rgba(13,13,13,.1);"></div>`).join('')}</div>
+      <!-- buttons 0px -->
+      <div style="display:flex;gap:6px;">
+        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:7.5px;letter-spacing:.12em;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">BUY <span style="display:flex;">${IC.arrow}</span></div>
+        <div style="flex:1;border:1.5px solid #0D0D0D;padding:7px;text-align:center;font-size:7.5px;letter-spacing:.1em;font-family:'DM Mono',monospace;">LEARN</div>
+      </div>
+      <!-- tag chips 0px -->
+      <div style="display:flex;gap:4px;">
+        ${['Design','Code'].map(t=>`<div style="background:rgba(13,13,13,.08);padding:3px 7px;font-size:6.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.6);">${t}</div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>`,
+
+// ─── SHAPE: SOFT (8px) ────────────────────────────────────────────────────────
+soft: `<div style="width:100%;height:100%;background:#F0EDE7;padding:14px;display:flex;align-items:center;justify-content:center;">
+  <div style="width:100%;background:white;border:1.5px solid rgba(13,13,13,.1);border-radius:8px;overflow:hidden;box-shadow:0 3px 16px rgba(13,13,13,.07);">
+    <div style="background:#0D0D0D;padding:8px 12px;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:9px;color:white;">Studio</div>
+      <div style="color:rgba(255,255,255,.45);display:flex;">${IC.menu}</div>
+    </div>
+    <div style="padding:13px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;line-height:1.15;color:#0D0D0D;">Soft &<br>Approachable.</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">${[90,70].map(w=>`<div style="height:6px;width:${w}%;background:rgba(13,13,13,.09);border-radius:4px;"></div>`).join('')}</div>
+      <div style="display:flex;gap:6px;">
+        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:7.5px;border-radius:6px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">Buy <span style="display:flex;">${IC.arrow}</span></div>
+        <div style="flex:1;border:1.5px solid rgba(13,13,13,.14);padding:7px;text-align:center;font-size:7.5px;border-radius:6px;font-family:'DM Mono',monospace;color:rgba(13,13,13,.7);">Learn</div>
+      </div>
+      <div style="display:flex;gap:4px;">
+        ${['Design','Code'].map(t=>`<div style="background:rgba(13,13,13,.07);padding:3px 8px;font-size:6.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(13,13,13,.55);border-radius:4px;">${t}</div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>`,
+
+// ─── SHAPE: ROUND (12px) ──────────────────────────────────────────────────────
+round: `<div style="width:100%;height:100%;background:#ECF0F5;padding:14px;display:flex;align-items:center;justify-content:center;">
+  <div style="width:100%;background:white;border:1px solid rgba(13,13,13,.08);border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(13,13,13,.09);">
+    <div style="background:#0D0D0D;padding:8px 12px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:9px;color:white;">Studio</div>
+      <div style="color:rgba(255,255,255,.4);display:flex;">${IC.menu}</div>
+    </div>
+    <div style="padding:13px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;line-height:1.15;color:#0D0D0D;">Smooth &<br>Friendly.</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">${[90,70].map(w=>`<div style="height:6px;width:${w}%;background:rgba(13,13,13,.09);border-radius:8px;"></div>`).join('')}</div>
+      <div style="display:flex;gap:6px;">
+        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:7.5px;border-radius:10px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">Buy <span style="display:flex;">${IC.arrow}</span></div>
+        <div style="flex:1;border:1.5px solid rgba(13,13,13,.12);padding:7px;text-align:center;font-size:7.5px;border-radius:10px;font-family:'DM Mono',monospace;color:rgba(13,13,13,.7);">Learn</div>
+      </div>
+      <div style="display:flex;gap:4px;">
+        ${['Design','Code'].map(t=>`<div style="background:rgba(13,13,13,.07);padding:3px 8px;font-size:6.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(13,13,13,.55);border-radius:8px;">${t}</div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>`,
+
+// ─── SHAPE: PILL (24px+) ──────────────────────────────────────────────────────
+pill: `<div style="width:100%;height:100%;background:#EAF0FF;padding:14px;display:flex;align-items:center;justify-content:center;">
+  <div style="width:100%;background:white;border:1px solid rgba(13,13,13,.06);border-radius:24px;overflow:hidden;box-shadow:0 6px 32px rgba(13,13,13,.08);">
+    <div style="background:#0D0D0D;padding:8px 16px;border-radius:22px 22px 0 0;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:9px;color:white;">Studio</div>
+      <div style="color:rgba(255,255,255,.4);display:flex;">${IC.menu}</div>
+    </div>
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:11px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;line-height:1.15;color:#0D0D0D;">Round &<br>Playful.</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">${[90,70].map(w=>`<div style="height:6px;width:${w}%;background:rgba(13,13,13,.08);border-radius:99px;"></div>`).join('')}</div>
+      <div style="display:flex;gap:6px;">
+        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:7.5px;border-radius:99px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">Buy <span style="display:flex;">${IC.arrow}</span></div>
+        <div style="flex:1;border:1.5px solid rgba(13,13,13,.1);padding:7px;text-align:center;font-size:7.5px;border-radius:99px;font-family:'DM Mono',monospace;color:rgba(13,13,13,.7);">Learn</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        ${['Design','Code'].map(t=>`<div style="background:rgba(13,13,13,.06);padding:3px 10px;font-size:6.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(13,13,13,.5);border-radius:99px;">${t}</div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>`,
+
+// ─── TONE: BOLD TECH ──────────────────────────────────────────────────────────
+boldtech: `<div style="width:100%;height:100%;background:#080810;padding:14px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative;">
+  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#FF4D00 0%,rgba(255,77,0,0) 100%);"></div>
+  <div style="position:absolute;bottom:0;right:0;width:120px;height:120px;background:radial-gradient(circle,rgba(255,77,0,.12) 0%,transparent 70%);pointer-events:none;"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;position:relative;">
+    <div style="font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.25);">SYS_001</div>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <div style="width:5px;height:5px;border-radius:50%;background:#FF4D00;box-shadow:0 0 5px #FF4D00;"></div>
+      <div style="font-size:6.5px;letter-spacing:.1em;color:rgba(255,77,0,.7);font-family:'DM Mono',monospace;">LIVE</div>
+    </div>
+  </div>
+  <div style="position:relative;">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:30px;line-height:.92;letter-spacing:-.03em;color:white;text-transform:uppercase;margin-bottom:8px;">BREAK<br><span style="color:#FF4D00;">THE</span><br>NORM.</div>
+    <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:10px;">
+      ${[100,68].map(w=>`<div style="height:2px;width:${w}%;background:rgba(255,255,255,.12);border-radius:1px;"></div>`).join('')}
+    </div>
+    <div style="display:flex;gap:6px;">
+      <div style="background:#FF4D00;color:white;font-size:7px;letter-spacing:.15em;padding:6px 12px;font-family:'DM Mono',monospace;text-transform:uppercase;display:flex;align-items:center;gap:4px;">LAUNCH <span style="display:flex;">${IC.arrow}</span></div>
+      <div style="border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-size:7px;letter-spacing:.12em;padding:6px 12px;font-family:'DM Mono',monospace;text-transform:uppercase;">DOCS</div>
+    </div>
+  </div>
+</div>`,
+
+// ─── TONE: EDITORIAL MODERN ───────────────────────────────────────────────────
+edmod: `<div style="width:100%;height:100%;background:#FAFAF8;padding:0;display:flex;flex-direction:column;overflow:hidden;">
+  <!-- thin rule header -->
+  <div style="padding:9px 14px;border-bottom:1px solid rgba(13,13,13,.12);display:flex;justify-content:space-between;align-items:baseline;">
+    <div style="font-family:'Georgia',serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(13,13,13,.5);">The Review</div>
+    <div style="font-family:'Georgia',serif;font-size:8px;color:rgba(13,13,13,.3);font-style:italic;">Vol. XII</div>
+  </div>
+  <div style="flex:1;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div>
+      <div style="font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:#FF4D00;margin-bottom:8px;">Feature Essay</div>
+      <div style="font-family:'Georgia',serif;font-size:20px;line-height:1.15;font-weight:700;color:#0D0D0D;margin-bottom:6px;">On the art<br>of <em style="color:#FF4D00;">refined</em><br>simplicity.</div>
+      <div style="width:24px;height:2px;background:#0D0D0D;margin-bottom:8px;"></div>
+    </div>
+    <div>
+      <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:8px;">
+        ${[95,82,88].map(w=>`<div style="height:4px;width:${w}%;background:rgba(13,13,13,.09);border-radius:1px;"></div>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(13,13,13,.1);padding-top:6px;">
+        <div style="font-family:'Georgia',serif;font-size:7.5px;font-style:italic;color:rgba(13,13,13,.4);">by the editors</div>
+        <div style="font-family:'Georgia',serif;font-size:9px;color:rgba(13,13,13,.4);">→</div>
+      </div>
+    </div>
+  </div>
+</div>`,
+
+// ─── TONE: RAW MONO ───────────────────────────────────────────────────────────
+rawmono: `<div style="width:100%;height:100%;background:#0D1117;padding:12px;display:flex;flex-direction:column;gap:0;font-family:'Courier New',monospace;overflow:hidden;">
+  <!-- window chrome -->
+  <div style="background:#1c1c1c;border-radius:6px 6px 0 0;padding:7px 10px;display:flex;align-items:center;gap:5px;border-bottom:1px solid rgba(255,255,255,.07);">
+    <div style="width:7px;height:7px;border-radius:50%;background:#FF5F56;"></div>
+    <div style="width:7px;height:7px;border-radius:50%;background:#FFBD2E;"></div>
+    <div style="width:7px;height:7px;border-radius:50%;background:#27C93F;"></div>
+    <div style="flex:1;"></div>
+    <div style="font-size:7px;color:rgba(255,255,255,.2);letter-spacing:.05em;">schwep — zsh</div>
+    <div style="flex:1;"></div>
+  </div>
+  <!-- terminal body -->
+  <div style="flex:1;background:#0D1117;border-radius:0 0 6px 6px;padding:10px;display:flex;flex-direction:column;gap:2px;border:1px solid rgba(255,255,255,.06);border-top:none;">
+    <div style="font-size:8.5px;color:rgba(255,255,255,.75);line-height:1.75;">
+      <div><span style="color:#FF4D00;">➜</span> <span style="color:#3DFFD0;">~/project</span> <span style="color:rgba(255,255,255,.4);">git:(main)</span></div>
+      <div><span style="color:rgba(255,255,255,.5);">$</span> schwep init</div>
+      <div style="color:rgba(255,255,255,.35);">  ✓ loaded config</div>
+      <div style="color:rgba(255,255,255,.35);">  ✓ ready in 42ms</div>
+      <div><span style="color:rgba(255,255,255,.5);">$</span> schwep build <span style="color:rgba(255,77,0,.7);">--prod</span></div>
+      <div style="color:#27C93F;">  ✓ design.dna written</div>
+      <div style="display:flex;align-items:center;gap:2px;"><span style="color:rgba(255,255,255,.5);">$</span><div style="width:6px;height:11px;background:#FF4D00;margin-left:3px;animation:blink .9s step-end infinite;"></div></div>
+    </div>
+  </div>
+</div>`,
+
+// ─── TONE: HANDWRITTEN ────────────────────────────────────────────────────────
+hand: `<div style="width:100%;height:100%;background:#FFFEF5;padding:14px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;">
+  <!-- notebook lines -->
+  <div style="position:absolute;inset:0;background-image:repeating-linear-gradient(transparent,transparent 23px,rgba(13,13,13,.07) 23px,rgba(13,13,13,.07) 24px);pointer-events:none;top:32px;"></div>
+  <!-- red margin line -->
+  <div style="position:absolute;top:0;bottom:0;left:28px;width:1px;background:rgba(255,100,100,.25);pointer-events:none;"></div>
+  <div style="position:relative;padding-left:16px;">
+    <div style="font-family:'Georgia',serif;font-size:8.5px;color:rgba(13,13,13,.4);margin-bottom:14px;font-style:italic;">Dear reader,</div>
+    <div style="font-family:'Georgia',serif;font-size:17px;line-height:1.4;color:#2a2a2a;font-style:italic;transform:rotate(-0.8deg);letter-spacing:.01em;">
+      Every detail<br>matters — <span style="border-bottom:2px solid #FF4D00;padding-bottom:1px;">especially</span><br>the small ones.
+    </div>
+  </div>
+  <div style="position:relative;padding-left:16px;display:flex;justify-content:space-between;align-items:flex-end;">
+    <div style="display:flex;gap:3px;align-items:center;">
+      <span style="color:#FF4D00;font-size:14px;">♡</span>
+      <span style="color:#FF4D00;font-size:14px;">★</span>
+    </div>
+    <div style="font-family:'Georgia',serif;font-size:9px;font-style:italic;color:rgba(13,13,13,.35);border-top:1px solid rgba(13,13,13,.1);padding-top:5px;">— with care</div>
+  </div>
+</div>`,
+
+// ─── FINISH: GRAIN TEXTURE ────────────────────────────────────────────────────
+grain: `<div style="width:100%;height:100%;position:relative;overflow:hidden;background:#EDE5D8;">
+  <!-- grain layer -->
+  <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%224%22 stitchTiles=%22stitch%22/><feColorMatrix type=%22saturate%22 values=%220%22/></filter><rect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%220.15%22/></svg>');opacity:1;"></div>
+  <!-- vignette -->
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(13,13,13,.18) 100%);pointer-events:none;"></div>
+  <div style="position:relative;padding:14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(60,40,20,.5);font-family:'DM Mono',monospace;">Est. 1924</div>
+      <div style="width:22px;height:22px;border:1.5px solid rgba(60,40,20,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(60,40,20,.5);">✦</div>
+    </div>
+    <div>
+      <div style="font-family:'Georgia',serif;font-size:19px;font-weight:700;line-height:1.15;color:#2C1F0F;margin-bottom:6px;">Warm.<br>Textured.<br><em>Alive.</em></div>
+      <div style="width:36px;height:2px;background:#8B6A45;border-radius:1px;margin-bottom:8px;"></div>
+      <div style="display:flex;flex-direction:column;gap:3px;">${[88,70,78].map(w=>`<div style="height:5px;width:${w}%;background:rgba(60,40,20,.18);border-radius:2px;"></div>`).join('')}</div>
+    </div>
+    <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(44,31,15,.85);color:#EDE5D8;font-size:7.5px;letter-spacing:.12em;padding:6px 11px;text-transform:uppercase;font-family:'DM Mono',monospace;border-radius:3px;">Explore <span style="display:flex;">${IC.arrow}</span></div>
+  </div>
+</div>`,
+
+// ─── FINISH: CLEAN MINIMAL ────────────────────────────────────────────────────
+clean: `<div style="width:100%;height:100%;background:#FFFFFF;display:flex;flex-direction:column;overflow:hidden;">
+  <div style="padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(13,13,13,.07);">
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:10px;letter-spacing:.06em;color:#0D0D0D;">STUDIO</div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      ${['Work','Info'].map(t=>`<span style="font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);">${t}</span>`).join('')}
+    </div>
+  </div>
+  <div style="flex:1;padding:16px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:24px;letter-spacing:-.03em;line-height:1.0;color:#0D0D0D;margin-bottom:8px;">Nothing<br>extra.</div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px;">${[100,80,90,65].map(w=>`<div style="height:4px;width:${w}%;background:rgba(13,13,13,.07);border-radius:2px;"></div>`).join('')}</div>
+    </div>
+    <div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <div style="flex:1;background:#0D0D0D;color:white;padding:7px;text-align:center;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;border-radius:3px;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:4px;">View work <span style="display:flex;">${IC.arrow}</span></div>
+        <div style="border:1px solid rgba(13,13,13,.12);color:rgba(13,13,13,.6);padding:7px;text-align:center;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;border-radius:3px;font-family:'DM Mono',monospace;">About</div>
+      </div>
+      <div style="font-size:7px;color:rgba(13,13,13,.25);letter-spacing:.08em;text-align:center;border-top:1px solid rgba(13,13,13,.06);padding-top:7px;">© 2024 Studio — All rights reserved</div>
+    </div>
+  </div>
+</div>`,
+
+// ─── FINISH: GRITTY EDGE ──────────────────────────────────────────────────────
+gritty: `<div style="width:100%;height:100%;background:#111;display:flex;flex-direction:column;overflow:hidden;position:relative;">
+  <!-- scanlines -->
+  <div style="position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,.02) 3px,rgba(255,255,255,.02) 4px);pointer-events:none;"></div>
+  <!-- top bar -->
+  <div style="height:3px;background:linear-gradient(90deg,#FF4D00,#ff9500);flex-shrink:0;"></div>
+  <div style="flex:1;padding:12px;display:flex;flex-direction:column;justify-content:space-between;position:relative;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:'DM Mono',monospace;font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3);">GRIT/001</div>
+      <div style="display:flex;gap:3px;">
+        <div style="width:6px;height:6px;background:#FF4D00;"></div>
+        <div style="width:6px;height:6px;background:rgba(255,77,0,.4);"></div>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:26px;line-height:.9;letter-spacing:-.02em;text-transform:uppercase;margin-bottom:8px;">
+        <span style="color:white;">RAW</span><br>
+        <span style="-webkit-text-stroke:1.5px #FF4D00;color:transparent;">POWER</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:10px;">${[100,75,85,52].map(w=>`<div style="height:2px;width:${w}%;background:rgba(255,255,255,.2);"></div>`).join('')}</div>
+    </div>
+    <div style="display:flex;gap:5px;">
+      <div style="flex:1;border:1.5px solid rgba(255,255,255,.2);padding:7px;text-align:center;font-size:7.5px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.6);font-family:'DM Mono',monospace;">INFO</div>
+      <div style="flex:1;background:#FF4D00;padding:7px;text-align:center;font-size:7.5px;letter-spacing:.15em;text-transform:uppercase;color:white;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;gap:3px;">GO <span style="display:flex;">${IC.arrow}</span></div>
+    </div>
+  </div>
+</div>`,
+
+// ─── FINISH: NEON GLOW ────────────────────────────────────────────────────────
+neon: `<div style="width:100%;height:100%;background:#040414;display:flex;flex-direction:column;overflow:hidden;position:relative;">
+  <!-- ambient glow -->
+  <div style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);width:160px;height:160px;background:radial-gradient(circle,rgba(61,255,208,.12) 0%,transparent 65%);pointer-events:none;"></div>
+  <div style="position:absolute;bottom:20px;right:20px;width:80px;height:80px;background:radial-gradient(circle,rgba(255,77,255,.08) 0%,transparent 65%);pointer-events:none;"></div>
+  <!-- nav -->
+  <div style="padding:9px 12px;border-bottom:1px solid rgba(61,255,208,.12);display:flex;justify-content:space-between;align-items:center;position:relative;flex-shrink:0;">
+    <div style="font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:#3DFFD0;text-shadow:0 0 8px rgba(61,255,208,.6);">NEON.SYS</div>
+    <div style="display:flex;gap:5px;align-items:center;">
+      <div style="width:5px;height:5px;border-radius:50%;background:#3DFFD0;box-shadow:0 0 6px #3DFFD0;"></div>
+      <div style="width:5px;height:5px;border-radius:50%;background:#FF4DFF;box-shadow:0 0 6px #FF4DFF;"></div>
+    </div>
+  </div>
+  <!-- body -->
+  <div style="flex:1;padding:12px;display:flex;flex-direction:column;justify-content:space-between;position:relative;">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:24px;line-height:1;letter-spacing:.04em;text-transform:uppercase;color:#3DFFD0;text-shadow:0 0 20px rgba(61,255,208,.7),0 0 40px rgba(61,255,208,.3);margin-bottom:6px;">NEON<br>PULSE.</div>
+      <div style="width:55px;height:1.5px;background:#3DFFD0;box-shadow:0 0 8px #3DFFD0;border-radius:1px;margin-bottom:8px;"></div>
+      <div style="display:flex;flex-direction:column;gap:3px;">${[88,65,78].map((w,i)=>`<div style="height:2.5px;width:${w}%;background:rgba(61,255,208,${0.25-i*0.05});border-radius:1px;box-shadow:0 0 4px rgba(61,255,208,.25);"></div>`).join('')}</div>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <div style="flex:1;border:1.5px solid rgba(61,255,208,.35);padding:7px;text-align:center;font-size:7.5px;letter-spacing:.15em;text-transform:uppercase;color:#3DFFD0;font-family:'DM Mono',monospace;box-shadow:0 0 8px rgba(61,255,208,.12);">INFO</div>
+      <div style="flex:1;background:rgba(61,255,208,.1);border:1.5px solid #3DFFD0;padding:7px;text-align:center;font-size:7.5px;letter-spacing:.15em;text-transform:uppercase;color:#3DFFD0;font-family:'DM Mono',monospace;box-shadow:0 0 12px rgba(61,255,208,.2);display:flex;align-items:center;justify-content:center;gap:3px;">GO <span style="display:flex;">${IC.arrow}</span></div>
+    </div>
+  </div>
+</div>`,
+
+  };
+  return map[type] || '<div style="width:100%;height:100%;background:rgba(13,13,13,.03);"></div>';
+}
+
+
+// ══════════════════════════════════════
+//  DESIGN SYSTEM SYNTHESIS (DNA output)
+// ══════════════════════════════════════
+const PALETTES = {
+  'Neon Glow': {
+    swatches:[
+      { name:'Void',     hex:'#040414', role:'Background' },
+      { name:'Plasma',   hex:'#3DFFD0', role:'Primary'    },
+      { name:'Pulse',    hex:'#FF4DFF', role:'Accent'     },
+      { name:'Static',   hex:'#1A1A2E', role:'Surface'    },
+      { name:'Signal',   hex:'#FFFFFF', role:'Text'       },
+    ]
+  },
+  'Gritty Edge': {
+    swatches:[
+      { name:'Tar',      hex:'#111111', role:'Background' },
+      { name:'Ember',    hex:'#FF4D00', role:'Primary'    },
+      { name:'Ash',      hex:'#3A3A3A', role:'Surface'    },
+      { name:'Concrete', hex:'#888888', role:'Muted'      },
+      { name:'Bone',     hex:'#F0EDE7', role:'Text'       },
+    ]
+  },
+  'Grain Texture': {
+    swatches:[
+      { name:'Parchment',hex:'#EDE5D8', role:'Background' },
+      { name:'Ink',      hex:'#2C1F0F', role:'Primary'    },
+      { name:'Sienna',   hex:'#8B6A45', role:'Accent'     },
+      { name:'Linen',    hex:'#F5EFE6', role:'Surface'    },
+      { name:'Dusk',     hex:'#6B5B4E', role:'Muted'      },
+    ]
+  },
+  'Clean Minimal': {
+    swatches:[
+      { name:'White',    hex:'#FFFFFF', role:'Background' },
+      { name:'Ink',      hex:'#0D0D0D', role:'Primary'    },
+      { name:'Flame',    hex:'#FF4D00', role:'Accent'     },
+      { name:'Mist',     hex:'#F5F5F5', role:'Surface'    },
+      { name:'Slate',    hex:'#888888', role:'Muted'      },
+    ]
+  },
+};
+
+const TYPEFACES = {
+  'Bold Tech': {
+    display: { name:'Syne', weight:'800', size:'72px', style:'normal',  sample:'SYSTEM' },
+    body:    { name:'DM Mono', weight:'400', size:'14px', style:'normal', sample:'Interface copy — monospaced and direct.' },
+    meta:    'Syne 800 / DM Mono 400 — high contrast, structured hierarchy',
+  },
+  'Editorial Modern': {
+    display: { name:'Georgia', weight:'700', size:'64px', style:'italic', sample:'Refined' },
+    body:    { name:'Georgia', weight:'400', size:'15px', style:'normal', sample:'Editorial body — warm, considered, readable.' },
+    meta:    'Georgia 700i / Georgia 400 — classical rhythm, editorial warmth',
+  },
+  'Raw Mono': {
+    display: { name:'DM Mono', weight:'500', size:'56px', style:'normal', sample:'RAW_OUT' },
+    body:    { name:'DM Mono', weight:'300', size:'13px', style:'normal', sample:'Fixed-width. Every character deliberate.' },
+    meta:    'DM Mono 500 / DM Mono 300 — raw, undecorated, precise',
+  },
+  'Handwritten': {
+    display: { name:'Georgia', weight:'400', size:'60px', style:'italic', sample:'personal' },
+    body:    { name:'Georgia', weight:'400', size:'15px', style:'italic', sample:'Warm, organic, like a letter to a friend.' },
+    meta:    'Georgia italic / Georgia 400i — intimate, handcrafted feel',
+  },
+};
+
+const ARCHETYPES = {
+  'Bento Grid+Bold Tech':        'Structured Signal',
+  'Bento Grid+Raw Mono':         'Grid System',
+  'Bento Grid+Editorial Modern': 'Data Editorial',
+  'Bento Grid+Handwritten':      'Warm Dashboard',
+  'Swiss Grid+Bold Tech':        'Pure Function',
+  'Swiss Grid+Raw Mono':         'Brutalist Grid',
+  'Swiss Grid+Editorial Modern': 'Swiss Editorial',
+  'Swiss Grid+Handwritten':      'Rational Warmth',
+  'Split Layout+Bold Tech':      'Power Split',
+  'Split Layout+Raw Mono':       'Terminal Split',
+  'Split Layout+Editorial Modern':'Editorial Feature',
+  'Split Layout+Handwritten':    'Story-Driven',
+  'Editorial+Bold Tech':         'Loud Editorial',
+  'Editorial+Raw Mono':          'Dispatch',
+  'Editorial+Editorial Modern':  'Classic Press',
+  'Editorial+Handwritten':       'Personal Essay',
+};
+
+function getRadiusTokens(shape) {
+  const r = radState;
+  const base = Math.round((r.tl + r.tr + r.br + r.bl) / 4);
+  return [
+    { name:'None',   val:'0px',       shape:0 },
+    { name:'SM',     val:Math.max(0,Math.round(base*0.3))+'px',   shape:Math.max(0,Math.round(base*0.3)) },
+    { name:'MD',     val:base+'px',        shape:base },
+    { name:'LG',     val:Math.round(base*1.8)+'px',  shape:Math.round(base*1.8) },
+  ];
+}
+
+function swatchTextColor(hex) {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return (0.299*r+0.587*g+0.114*b) > 128 ? '#0D0D0D' : '#FFFFFF';
+}
+
+function buildDesignSystem() {
+  const frame   = st.results['Frame']  || 'Bento Grid';
+  const shape   = st.results['Shape']  || 'Soft Corners';
+  const tone    = st.results['Tone']   || 'Bold Tech';
+  const finish  = st.results['Finish'] || 'Clean Minimal';
+
+  const palette    = PALETTES[finish]   || PALETTES['Clean Minimal'];
+  const typeface   = TYPEFACES[tone]    || TYPEFACES['Bold Tech'];
+  const archetype  = ARCHETYPES[`${frame}+${tone}`] || 'Design System';
+  const tokens     = getRadiusTokens(shape);
+  const vec        = dnaVec || [0.7,0.6,0.6,0.3,0.6,0.7];
+  const bg         = palette.swatches[0].hex;
+  const primary    = palette.swatches[1].hex;
+  const accent     = palette.swatches[2].hex;
+  const surface    = palette.swatches[3].hex;
+  const textCol    = swatchTextColor(bg);
+  const radius     = Math.round((radState.tl+radState.tr+radState.br+radState.bl)/4);
+  const axes       = ['Structure','Edge','Weight','Warmth','Energy','Digital'];
+
+  const paletteHTML = `
+<div class="ds-panel">
+  <div class="ds-panel-head">
+    <span class="ds-panel-tag">Colour Palette</span>
+    <span class="ds-panel-val">${finish}</span>
+  </div>
+  <div class="ds-panel-body">
+    <div class="palette-row">
+      ${palette.swatches.map(s => {
+        const tc = swatchTextColor(s.hex);
+        return `<div class="swatch" style="background:${s.hex};color:${tc};">
+          <div class="swatch-name">${s.name}</div>
+          <div class="swatch-hex">${s.hex}</div>
+          <div class="swatch-role">${s.role}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+</div>`;
+
+  const typeHTML = `
+<div class="ds-panel">
+  <div class="ds-panel-head">
+    <span class="ds-panel-tag">Typography</span>
+    <span class="ds-panel-val">${tone}</span>
+  </div>
+  <div class="ds-panel-body">
+    <div class="type-specimen">
+      <div class="type-row">
+        <div class="type-label">Display</div>
+        <div class="type-display" style="font-family:'${typeface.display.name}',serif,sans-serif;font-weight:${typeface.display.weight};font-size:clamp(28px,5vw,${typeface.display.size});font-style:${typeface.display.style};">${typeface.display.sample}</div>
+        <div class="type-meta">${typeface.display.name} · ${typeface.display.weight} · ${typeface.display.size}</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Body</div>
+        <div class="type-display" style="font-family:'${typeface.body.name}',serif,sans-serif;font-weight:${typeface.body.weight};font-size:${typeface.body.size};font-style:${typeface.body.style};line-height:1.6;">${typeface.body.sample}</div>
+        <div class="type-meta">${typeface.body.name} · ${typeface.body.weight} · ${typeface.body.size}</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">System</div>
+        <div class="type-meta" style="font-size:9px;">${typeface.meta}</div>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+  const tokensHTML = `
+<div class="ds-panel">
+  <div class="ds-panel-head">
+    <span class="ds-panel-tag">Radius Tokens</span>
+    <span class="ds-panel-val">${shape} · ${radius}px base</span>
+  </div>
+  <div class="ds-panel-body">
+    <div class="token-grid">
+      ${tokens.map(t => `
+      <div class="token-item">
+        <div class="token-shape" style="border-radius:${t.shape}px;"></div>
+        <div class="token-name">${t.name}</div>
+        <div class="token-val">${t.val}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+</div>`;
+
+  const fpHTML = `
+<div class="ds-panel">
+  <div class="ds-panel-head">
+    <span class="ds-panel-tag">DNA Fingerprint</span>
+    <span class="ds-panel-val" style="font-style:italic;color:var(--orange);">${archetype}</span>
+  </div>
+  <div class="ds-panel-body">
+    <div class="dna-fp">
+      ${axes.map((ax,i) => {
+        const pct = Math.round(vec[i]*100);
+        const fillColor = pct >= 70 ? 'var(--orange)' : pct >= 45 ? 'rgba(13,13,13,.35)' : 'rgba(13,13,13,.15)';
+        return `<div class="dna-fp-row">
+          <div class="dna-fp-label">${ax}</div>
+          <div class="dna-fp-bar-bg"><div class="dna-fp-bar-fill" style="width:${pct}%;background:${fillColor};"></div></div>
+          <div class="dna-fp-num">${pct}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+</div>`;
+
+  const choicesHTML = `
+<div class="ds-panel ds-full">
+  <div class="ds-panel-body" style="padding:14px 18px;">
+    <div class="choices-row">
+      ${[['Frame',frame],['Shape',shape],['Tone',tone],['Finish',finish]].map(([k,v])=>`
+      <div class="choice-chip">
+        <div class="choice-chip-k">${k}</div>
+        <div class="choice-chip-v">${v}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+</div>`;
+
+  return `
+<div class="ds-hero">
+  <div class="ds-eyebrow">Design System · Complete</div>
+  <div>
+    <div class="ds-headline">Your</div>
+    <div class="ds-archetype">${archetype}</div>
+  </div>
+  <div class="ds-tagline">DNA vector locked · ${axes.filter((_,i)=>vec[i]>0.7).map(a=>a.toLowerCase()).join(' · ') || 'balanced profile'}</div>
+</div>
+${choicesHTML}
+<div class="ds-grid-wide">
+  ${paletteHTML}
+  ${typeHTML}
+</div>
+<div class="ds-grid-wide">
+  ${tokensHTML}
+  ${fpHTML}
+</div>
+<div class="ds-full">
+  ${buildLiveMockupPanel(frame, tone, finish, bg, primary, accent, surface, textCol, radius, shape)}
+</div>`;
+}
+
+function buildLiveMockupPanel(frame, tone, finish, bg, primary, accent, surface, textCol, radius, shape) {
+  const r = radius + 'px';
+  const r2 = Math.round(radius*0.6) + 'px';
+  const isDark = swatchTextColor(bg) === '#FFFFFF';
+  const mutedText = isDark ? 'rgba(255,255,255,.4)' : 'rgba(13,13,13,.4)';
+  const borderCol = isDark ? 'rgba(255,255,255,.1)' : 'rgba(13,13,13,.1)';
+
+  return `<div class="ds-panel">
+  <div class="ds-panel-head">
+    <span class="ds-panel-tag">Live Component</span>
+    <span class="ds-panel-val">${frame} · ${shape}</span>
+  </div>
+  <div class="ds-panel-body" style="padding:0;background:${bg};">
+    <div style="padding:20px;display:flex;flex-direction:column;gap:12px;min-height:280px;justify-content:space-between;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:${primary};letter-spacing:.06em;">STUDIO</div>
+        <div style="display:flex;gap:16px;">
+          ${['Work','About','Contact'].map(t=>`<span style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:${mutedText};">${t}</span>`).join('')}
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(22px,4vw,32px);line-height:1;letter-spacing:-.03em;color:${textCol};margin-bottom:8px;">${ARCHETYPES[frame+'+'+tone]||'Design System'}</div>
+        <div style="font-size:10px;color:${mutedText};line-height:1.6;max-width:280px;">${TYPEFACES[tone]?.body?.sample||'Design that thinks.'}</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div style="background:${accent};color:${swatchTextColor(accent)};padding:10px 18px;border-radius:${r};font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-family:'DM Mono',monospace;display:inline-flex;align-items:center;gap:6px;">
+          Get started
+          <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M1 5h8M6 2l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="border:1.5px solid ${borderCol};color:${mutedText};padding:10px 18px;border-radius:${r};font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-family:'DM Mono',monospace;">
+          Learn more
+        </div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        ${[frame, tone, finish].map(t=>`<div style="padding:4px 10px;border-radius:${r2};border:1px solid ${borderCol};font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:${mutedText};">${t}</div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function previewDesignSystem() {
+  if (!st.results['Frame'])  st.results['Frame']  = 'Bento Grid';
+  if (!st.results['Shape'])  st.results['Shape']  = 'Sharp Corners';
+  if (!st.results['Tone'])   st.results['Tone']   = 'Bold Tech';
+  if (!st.results['Finish']) st.results['Finish'] = 'Clean Minimal';
+  if (!dnaVec) {
+    dnaVec = [0.90, 0.80, 0.72, 0.18, 0.68, 0.85];
+    dnaCount = 4;
+  }
+  document.getElementById('ds-output').innerHTML = buildDesignSystem();
+  document.getElementById('done-screen').classList.add('show');
+  document.getElementById('tracker').style.display = 'none';
+  document.querySelector('.app').classList.add('done-mode');
+  document.getElementById('deck-area').style.display = 'none';
+  const dna = document.getElementById('dna-bar-wrap');
+  if (dna) dna.classList.remove('visible');
+  const ctx = document.getElementById('ctx-panel');
+  if (ctx) ctx.classList.remove('visible');
+  const btn = document.getElementById('btn-again');
+  if (btn) btn.textContent = '✦ Build Yours';
+}
+
+function init() {
+  console.log('Engine init() running');
+  try {
+    buildTrack();
+    renderCard();
+    renderTracker();
+    previewDesignSystem();
+  } catch (err) {
+    console.error('Engine init error:', err);
+    var da = document.getElementById('deck-area');
+    if (da) da.innerHTML = '<div style="padding:40px;text-align:center;color:#c00;">Error: ' + (err.message || err) + '</div>';
+  }
+}
+
+function buildTrack() {
+  // Seg row: [group0] [node] [group1] [node] [group2] [node] [group3]
+  const row    = document.getElementById('seg-row');
+  const lblRow = document.getElementById('seg-labels');
+  row.innerHTML = ''; lblRow.innerHTML = '';
+
+  ROUNDS.forEach((r, ri) => {
+    // label
+    const lbl = document.createElement('div');
+    lbl.className = 'seg-lbl'; lbl.id = `slbl-${ri}`;
+    lbl.textContent = r.label;
+    lblRow.appendChild(lbl);
+
+    // group of bars for this round
+    const g = document.createElement('div');
+    g.className = 'seg-group'; g.id = `seg-${ri}`;
+    const barCount = ri === 0 ? 1 : 3;
+    for (let b = 0; b < barCount; b++) {
+      const bar = document.createElement('div');
+      bar.className = 'seg-bar'; bar.id = `bar-${ri}-${b}`;
+      g.appendChild(bar);
+    }
+    row.appendChild(g);
+
+    // node dot after each group except the last
+    if (ri < ROUNDS.length - 1) {
+      const node = document.createElement('div');
+      node.className = 'seg-node'; node.id = `node-${ri}`;
+      row.appendChild(node);
+    }
+  });
+}
+
+function renderTrackerAtDot() {
+  // Fill ALL bars in current round immediately, then renderTracker handles advance
+  const barCount = st.round === 0 ? 1 : 3;
+  for (let b = 0; b < barCount; b++) {
+    const bar = document.getElementById(`bar-${st.round}-${b}`);
+    if (bar) { bar.className = 'seg-bar filled'; }
+  }
+  // Mark node as done
+  const node = document.getElementById(`node-${st.round}`);
+  if (node) { node.className = 'seg-node done'; }
+}
+
+function renderTracker() {
+  const done = st.round >= ROUNDS.length;
+  const r    = done ? ROUNDS[ROUNDS.length-1] : ROUNDS[st.round];
+
+  document.getElementById('tr-tag').textContent   = `Round ${String(Math.min(st.round+1,4)).padStart(2,'0')}`;
+  document.getElementById('tr-title').textContent = done ? 'Complete!' : r.title;
+
+  // Update all bars based on state
+  ROUNDS.forEach((_, ri) => {
+    const barCount = ri === 0 ? 1 : 3;
+    const lbl = document.getElementById(`slbl-${ri}`);
+    if (lbl) {
+      lbl.className = 'seg-lbl';
+      if (ri < st.round) lbl.classList.add('done');
+      else if (ri === st.round && !done) lbl.classList.add('active');
+    }
+
+    for (let b = 0; b < barCount; b++) {
+      const bar = document.getElementById(`bar-${ri}-${b}`);
+      if (!bar) continue;
+      if (ri < st.round) {
+        // completed round — all filled
+        bar.className = 'seg-bar filled';
+      } else if (ri === st.round) {
+        // current round — fill based on likedThisRound
+        if (b < st.likedThisRound) {
+          bar.className = 'seg-bar filled';
+        } else {
+          bar.className = 'seg-bar';
+        }
+      } else {
+        // future round
+        bar.className = 'seg-bar';
+      }
+    }
+
+    // nodes
+    const node = document.getElementById(`node-${ri}`);
+    if (node) {
+      node.className = 'seg-node';
+      if (ri < st.round) node.classList.add('done');
+      else if (ri === st.round && !done) node.classList.add('active');
+    }
+  });
+}
+
+function buildPills() {}  // no-op, kept for safety
+
+function renderCard() {
+  if (st.round >= ROUNDS.length) { showDone(); return; }
+  const round = ROUNDS[st.round];
+  const data  = round.cards[st.card];
+  if (!data) return;
+  var nameEl = document.getElementById('card-name');
+  var descEl = document.getElementById('card-desc');
+  var visEl  = document.getElementById('card-vis');
+  if (!nameEl || !descEl || !visEl) return;
+  nameEl.textContent = data.name;
+  descEl.textContent = data.desc;
+  visEl.innerHTML    = makePreview(data.preview);
+
+  // DNA match badge (only from round 2+, and only if DNA vector exists)
+  const badge = document.getElementById('dna-badge');
+  if (badge) {
+    if (dnaVec && st.round > 0 && data.matchInfo) {
+      // Rank within this round's sorted deck (card 0 = best match)
+      const rank  = st.card + 1;
+      const total = round.cards.length;
+      badge.textContent   = data.matchInfo.label;
+      badge.style.color   = data.matchInfo.color;
+      badge.style.opacity = '1';
+      badge.title = `DNA rank ${rank} of ${total}`;
+    } else {
+      badge.style.opacity = '0';
+    }
+  }
+  // Always sync DNA panel
+  renderDNABar();
+  // Always sync right context panel
+  renderCtxPanel();
+  // If we're in the Shape round, keep the radius editor state applied
+  if (ROUND_KEYS[st.round] === 'Shape') {
+    requestAnimationFrame(applyRadiusToDemo);
+  }
+
+  // Reset transform
+  if (cardEl) { cardEl.style.transform = 'translate(0,0) rotate(0deg)'; cardEl.style.opacity = '1'; cardEl.classList.remove('snapping','throwing','is-dragging'); }
+  if (indLike) indLike.style.opacity = '0';
+  if (indNope) indNope.style.opacity = '0';
+  dragging=false; curX=0; curY=0;
+}
+
+// ══════════════════════════════════════
+//  ACTIONS
+// ══════════════════════════════════════
+function doLike() {
+  if (st.round >= ROUNDS.length) return;
+  const round = ROUNDS[st.round];
+  const effectiveCard = _activeInjected || round.cards[st.card];
+  if (!effectiveCard) return;
+  _activeInjected = null;
+  const likedName = effectiveCard.name;
+  st.results[round.label] = likedName;
+  st.likedTotal++;
+  st.likedThisRound++;
+  st.card++;
+
+  // Feed DNA engine with this liked card, then update the panel
+  feedDNA(likedName);
+  renderDNABar();
+
+  flash('green');
+
+  const needLikes = st.round === 0 ? 1 : 3;
+  const roundDone = st.likedThisRound >= needLikes;
+
+  // Animate the bar that was just filled
+  const filledBarIdx = st.likedThisRound - 1;
+  const animBar = document.getElementById(`bar-${st.round}-${filledBarIdx}`);
+  if (animBar) animBar.className = 'seg-bar filling';
+  setTimeout(() => { if (animBar) animBar.className = 'seg-bar filled'; }, 420);
+
+  if (roundDone) {
+    // Re-score all future rounds against accumulated DNA vector
+    recalcDeck();
+    renderTrackerAtDot();
+    setTimeout(() => {
+      st.round++;
+      st.card = 0;
+      st.likedThisRound = 0;
+      renderCard();
+      renderTracker();
+    }, 480);
+  } else {
+    renderTracker();
+    setTimeout(renderCard, 100);
+  }
+}
+
+function doSkip() {
+  if (st.round >= ROUNDS.length) return;
+  _activeInjected = null;
+  const round = ROUNDS[st.round];
+  st.card++;
+  if (st.card >= round.cards.length) st.card = 0;
+  if (cardEl) {
+    cardEl.classList.add('throwing');
+    cardEl.style.transform = 'translate(0px,-600px) rotate(0deg)';
+    cardEl.style.opacity='0';
+  }
+  setTimeout(function() { renderCard(); renderTracker(); }, 200);
+}
+
+function doNope() {
+  if (st.round >= ROUNDS.length) return;
+  const round = ROUNDS[st.round];
+  // If noping an injected variant, don't advance card index
+  if (_activeInjected) {
+    _activeInjected = null;
+    // Clear alt card selection in panel
+    document.querySelectorAll('.alt-card').forEach(a=>a.classList.remove('selected'));
+    // Re-render the real card
+    renderCard();
+    flash('red');
+    return;
+  }
+  st.nopedTotal++;
+  st.card++;
+
+  flash('red');
+
+  // Nopes NEVER advance the round — if we run out of cards without enough likes,
+  // we just keep showing the deck (or loop). For now: if no more cards, loop back.
+  if (st.card >= round.cards.length) {
+    // Ran out — loop round (don't advance)
+    st.card = 0;
+  }
+
+  renderTracker();
+  setTimeout(renderCard, 100);
+}
+
+// ══════════════════════════════════════
+//  SWIPE
+// ══════════════════════════════════════
+function startDrag(e) {
+  dragging=true; startX=e.clientX; startY=e.clientY;
+  cardEl.classList.add('is-dragging');
+  e.preventDefault();
+}
+function startDragT(e) {
+  dragging=true; startX=e.touches[0].clientX; startY=e.touches[0].clientY;
+  cardEl.classList.add('is-dragging');
+  e.preventDefault();
+}
+function onDrag(e) {
+  if(!dragging) return;
+  curX=e.clientX-startX; curY=e.clientY-startY;
+  applyTransform();
+}
+function onDragT(e) {
+  if(!dragging) return;
+  curX=e.touches[0].clientX-startX; curY=e.touches[0].clientY-startY;
+  applyTransform(); e.preventDefault();
+}
+function applyTransform() {
+  const rot = curX * 0.1;
+  if (cardEl) cardEl.style.transform = `translate(${curX}px,${curY}px) rotate(${rot}deg)`;
+  if (indLike) indLike.style.opacity = curX>0 ? Math.min(curX/90,1) : 0;
+  if (indNope) indNope.style.opacity = curX<0 ? Math.min(-curX/90,1) : 0;
+}
+function endDrag() {
+  if(!dragging) return;
+  dragging=false;
+  if (cardEl) cardEl.classList.remove('is-dragging');
+  if (Math.abs(curX) > 90) {
+    throwCard(curX > 0);
+  } else {
+    snapBack();
+  }
+}
+function throwCard(isLike) {
+  if (cardEl) {
+    cardEl.classList.add('throwing');
+    const dir = isLike ? 1 : -1;
+    cardEl.style.transform = `translate(${dir*600}px,${curY}px) rotate(${dir*25}deg)`;
+    cardEl.style.opacity='0';
+  }
+  setTimeout(function() {
+    isLike ? doLike() : doNope();
+  }, 200);
+}
+function snapBack() {
+  if (cardEl) cardEl.classList.add('snapping');
+  if (cardEl) cardEl.style.transform='translate(0,0) rotate(0deg)';
+  if (indLike) indLike.style.opacity='0';
+  if (indNope) indNope.style.opacity='0';
+  curX=0; curY=0;
+  setTimeout(()=>{ if (cardEl) cardEl.classList.remove('snapping'); },420);
+}
+
+// ══════════════════════════════════════
+//  DONE
+// ══════════════════════════════════════
+function showDone() {
+  document.getElementById('deck-area').style.display='none';
+  document.getElementById('dna-bar-wrap').classList.remove('visible');
+  document.getElementById('tracker').style.display='none';
+  document.querySelector('.app').classList.add('done-mode');
+  const cp = document.getElementById('ctx-panel');
+  if (cp) cp.classList.remove('visible');
+  const screen = document.getElementById('done-screen');
+  screen.classList.add('show');
+  document.getElementById('ds-output').innerHTML = buildDesignSystem();
+  const btn = document.getElementById('btn-again');
+  if (btn) btn.textContent = '↺ Start Over';
+}
+
+function reset() {
+  st={round:0,card:0,likedThisRound:0,likedTotal:0,nopedTotal:0,results:{}};
+  dnaVec = null;
+  dnaCount = 0;
+  // Restore original card order
+  ROUNDS = ROUND_KEYS.map(k => ({ label:k, title:ROUND_TITLES[k], cards:[...CATALOG[k]] }));
+  document.getElementById('deck-area').style.display='';
+  document.getElementById('tracker').style.display='';
+  document.querySelector('.app').classList.remove('done-mode');
+  document.getElementById('done-screen').classList.remove('show');
+  const badge = document.getElementById('dna-badge');
+  if (badge) badge.style.opacity = '0';
+  const btn = document.getElementById('btn-again');
+  if (btn) btn.textContent = '↺ Start Over';
+  renderDNABar();
+  _ctxLastKey  = null;
+  _ctxLastCard = null;
+  Object.assign(radState, {tl:8,tr:8,bl:8,br:8});
+  renderCard();
+  renderTracker();
+}
+
+// ══════════════════════════════════════
+//  RIGHT CONTEXT PANEL
+//
+//  Frame:  hidden (nothing to configure yet)
+//  Shape:  radius editor — live preview square + 4 corner sliders + presets
+//  Tone:   3 related alternatives as clickable mini previews
+//  Finish: 3 related alternatives as clickable mini previews
+//
+//  Clicking an alt card INJECTS it as the active card in the main deck
+//  so the user can Like or Nope it normally.
+// ══════════════════════════════════════
+
+
+function injectAltCard(altData) {
+  _activeInjected = altData;
+
+  // Slide the card in from the right
+  cardEl.style.transition = 'none';
+  cardEl.style.transform  = 'translate(50px,0) scale(.95)';
+  cardEl.style.opacity    = '0';
+
+  // Update content
+  document.getElementById('card-name').textContent = altData.name;
+  document.getElementById('card-desc').textContent = altData.desc;
+  document.getElementById('card-vis').innerHTML    = makePreview(altData.preview);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      cardEl.style.transition = 'transform .38s cubic-bezier(.34,1.56,.64,1), opacity .25s ease';
+      cardEl.style.transform  = 'translate(0,0) scale(1)';
+      cardEl.style.opacity    = '1';
+    });
+  });
+
+  cardEl.classList.remove('snapping','throwing','is-dragging');
+  indLike.style.opacity = '0';
+  indNope.style.opacity = '0';
+  dragging = false; curX = 0; curY = 0;
+
+  // Show "variant" badge
+  const badge = document.getElementById('dna-badge');
+  if (badge) {
+    badge.textContent   = 'Variant · like or nope it';
+    badge.style.color   = 'rgba(13,13,13,.4)';
+    badge.style.opacity = '1';
+    // Remove the ::before dot color override
+    badge.style.setProperty('--badge-dot', 'rgba(13,13,13,.3)');
+  }
+}
+
+function clearInjected() {
+  if (!_activeInjected) return;
+  _activeInjected = null;
+  renderCard();  // restore the real deck card
+}
+
+// Patch doLike/doNope to handle injected cards:
+// We wrap them — see patchedLike / patchedNope below.
+// The injected card is treated as a like/nope of a NEW card name
+// (saved into results as an override, doesn't advance st.card since it's extra).
+
+// ── Main render ───────────────────────────────────────────────────────────────
+function renderCtxPanel() {
+  const panel  = document.getElementById('ctx-panel');
+  const ctxTag = document.getElementById('ctx-tag');
+  const ctxTit = document.getElementById('ctx-title');
+  const ctxBod = document.getElementById('ctx-body');
+  if (!panel) return;
+
+  const roundKey  = ROUND_KEYS[st.round];
+  const cardIndex = st.card;
+  const roundChanged = _ctxLastKey  !== roundKey;
+  const cardChanged  = _ctxLastCard !== cardIndex;
+  _ctxLastKey  = roundKey;
+  _ctxLastCard = cardIndex;
+
+  if (roundChanged) _activeInjected = null;
+
+  if (roundKey === 'Frame') {
+    panel.classList.add('visible');
+    ctxTag.textContent = 'Frame';
+    ctxTit.textContent = 'Foundation';
+    if (roundChanged) {
+      ctxBod.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px;"><div style="font-size:8.5px;line-height:1.7;color:rgba(13,13,13,.45);">Pick your foundation layout. This seeds the DNA engine — every subsequent round reorders around your choice.</div><div style="display:flex;flex-direction:column;gap:4px;">' +
+        ['Bento Grid','Split Layout','Swiss Grid','Editorial'].map(n=>
+          '<div style="font-size:8px;padding:5px 8px;background:rgba(13,13,13,.04);border-radius:5px;border:1px solid rgba(13,13,13,.08);color:rgba(13,13,13,.5);">'+n+'</div>'
+        ).join('') +
+        '</div><div style="font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,77,0,.65);padding-top:6px;border-top:1px solid rgba(13,13,13,.08);">No adjustments · swipe to choose</div></div>';
+    }
+    return;
+  }
+
+  if (roundKey === 'Shape') {
+    panel.classList.add('visible');
+    ctxTag.textContent = 'Shape';
+    ctxTit.textContent = 'Radius Editor';
+    if (roundChanged) {
+      ctxBod.innerHTML = buildRadiusEditor();
+      attachRadiusListeners();
+    }
+    return;
+  }
+
+  if (roundKey === 'Tone' || roundKey === 'Finish') {
+    panel.classList.add('visible');
+    ctxTag.textContent = roundKey;
+    ctxTit.textContent = 'Related Styles';
+    if (roundChanged || cardChanged) {
+      const altMap = roundKey === 'Tone' ? TONE_ALTS : FINISH_ALTS;
+      const card   = ROUNDS[st.round].cards[st.card];
+      ctxBod.innerHTML = buildAltCards(card ? card.name : null, altMap);
+      attachAltListeners(altMap);
+    }
+    return;
+  }
+
+  panel.classList.remove('visible');
+}
+
+// ── Radius editor ─────────────────────────────────────────────────────────────
+function buildRadiusEditor() {
+  const {tl,tr,bl,br} = radState;
+  const r = `${tl}px ${tr}px ${br}px ${bl}px`;
+  const presets = [
+    ['Sharp','0,0,0,0'],
+    ['Soft','8,8,8,8'],
+    ['Round','14,14,14,14'],
+    ['Pill','99,99,99,99'],
+    ['Asym','0,14,14,0'],
+  ];
+  const sliders = [
+    ['Top Left','tl',tl],
+    ['Top Right','tr',tr],
+    ['Bot Right','br',br],
+    ['Bot Left','bl',bl],
+  ];
+  return `
+<div class="radius-preview-wrap">
+  <div class="radius-demo" id="radius-demo" style="border-radius:${r};"></div>
+</div>
+<div class="radius-presets">
+  ${presets.map(([l,v])=>`<button class="rad-preset" data-preset="${v}">${l}</button>`).join('')}
+</div>
+<div class="radius-sliders">
+  ${sliders.map(([label,key,val])=>`
+  <div class="rad-row">
+    <div class="rad-label-row">
+      <span class="rad-label">${label}</span>
+      <span class="rad-val" id="rad-val-${key}">${val}px</span>
+    </div>
+    <input type="range" class="rad-slider" id="rad-${key}" min="0" max="99" value="${val}">
+  </div>`).join('')}
+</div>`;
+}
+
+function attachRadiusListeners() {
+  ['tl','tr','bl','br'].forEach(key => {
+    const inp = document.getElementById(`rad-${key}`);
+    if (!inp) return;
+    inp.addEventListener('input', () => {
+      radState[key] = +inp.value;
+      const v = document.getElementById(`rad-val-${key}`);
+      if (v) v.textContent = radState[key] + 'px';
+      applyRadiusToDemo();
+    });
+  });
+  document.querySelectorAll('.rad-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const [a,b,d,e] = btn.dataset.preset.split(',').map(Number);
+      Object.assign(radState, {tl:a,tr:b,bl:e,br:d});
+      ['tl','tr','bl','br'].forEach(k => {
+        const i = document.getElementById(`rad-${k}`);
+        const v = document.getElementById(`rad-val-${k}`);
+        if (i) i.value = radState[k];
+        if (v) v.textContent = radState[k] + 'px';
+      });
+      applyRadiusToDemo();
+      document.querySelectorAll('.rad-preset').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+}
+
+function applyRadiusToDemo() {
+  const r = `${radState.tl}px ${radState.tr}px ${radState.br}px ${radState.bl}px`;
+  // Update the small demo box in the editor
+  const demo = document.getElementById('radius-demo');
+  if (demo) demo.style.borderRadius = r;
+  // Update the actual card preview component — the inner wrapper div
+  const vis = document.getElementById('card-vis');
+  if (vis) {
+    // Target the component card: second child of the padding wrapper
+    const wrapper = vis.querySelector('div');          // outer padding div
+    const component = wrapper && wrapper.children[0]; // the actual card component
+    if (component) {
+      component.style.borderRadius = r;
+      component.style.overflow = 'hidden';
+      // Also apply to header bar inside so it clips correctly
+      const header = component.children[0];
+      if (header) {
+        header.style.borderRadius = `${radState.tl}px ${radState.tr}px 0 0`;
+      }
+    }
+  }
+}
+
+// ── Alt cards (Tone / Finish) ─────────────────────────────────────────────────
+function buildAltCards(currentName, altMap) {
+  const alts = altMap[currentName];
+  // If no named alt list, show the round's other cards instead
+  const cards = (alts && alts.length) ? alts : (() => {
+    const round = ROUNDS[st.round];
+    return round.cards.filter((_,i) => i !== st.card).slice(0,3);
+  })();
+
+  if (!cards.length) {
+    return '<div style="font-size:8.5px;color:rgba(13,13,13,.35);line-height:1.7;padding:4px 0;">No related styles found for this card.</div>';
+  }
+
+  const headerText = (alts && alts.length)
+    ? '<div style="font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);margin-bottom:8px;">Variants of <strong style="color:var(--ink);">' + (currentName||'') + '</strong></div>'
+    : '<div style="font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,13,13,.35);margin-bottom:8px;">Other options this round</div>';
+
+  return headerText + buildAltCardsFromData(cards) +
+    '<div style="margin-top:8px;font-size:7.5px;color:rgba(13,13,13,.35);letter-spacing:.05em;line-height:1.6;">Click to load as main card —<br>then Like or Nope it.</div>';
+}
+
+function buildAltCardsFromData(alts) {
+  return '<div class="alt-cards">' + alts.map((alt,i) =>
+    '<div class="alt-card" data-alt-i="'+i+'" data-alt-name="'+alt.name+'" data-alt-desc="'+alt.desc+'" data-alt-preview="'+alt.preview+'">' +
+      '<div class="alt-thumb">' + makePreview(alt.preview) + '</div>' +
+      '<div class="alt-info">' +
+        '<div><div class="alt-name">'+alt.name+'</div><div class="alt-match">'+alt.desc+'</div></div>' +
+        '<div style="font-size:11px;color:rgba(13,13,13,.25);flex-shrink:0;">→</div>' +
+      '</div>' +
+    '</div>'
+  ).join('') + '</div>';
+}
+
+function attachAltListeners(altMap) {
+  document.querySelectorAll('.alt-card').forEach(el => {
+    el.addEventListener('click', () => {
+      // Deselect all
+      document.querySelectorAll('.alt-card').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      // Inject into main card
+      injectAltCard({
+        name:    el.dataset.altName,
+        desc:    el.dataset.altDesc,
+        preview: el.dataset.altPreview,
+      });
+    });
+  });
+}
+
+
+// ══════════════════════════════════════
+//  BOOT
+
+document.getElementById('btn-like').addEventListener('click', ()=>{ throwCard(true); });
+document.getElementById('btn-nope').addEventListener('click', ()=>{ throwCard(false); });
+document.getElementById('btn-skip').addEventListener('click', doSkip);
+document.getElementById('btn-again').addEventListener('click', reset);
+document.getElementById('btn-back').addEventListener('click', reset);
+
+window.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') throwCard(true);
+  if(e.key==='ArrowLeft')  throwCard(false);
+  if(e.key==='ArrowUp')    doSkip();
+  if(e.key==='r'||e.key==='R') reset();
+});
+
+
+// Boot — get refs (script is at end of body so DOM is ready)
+cardEl  = document.getElementById('card');
+indLike = document.getElementById('ind-like');
+indNope = document.getElementById('ind-nope');
+console.log('Engine boot: card=', !!cardEl, 'deck-area=', !!document.getElementById('deck-area'));
+if (!cardEl || !indLike || !indNope) {
+  console.error('Engine: missing card elements');
+  var da = document.getElementById('deck-area');
+  if (da) da.innerHTML = '<div style="padding:40px;text-align:center;color:#999;">Failed to load. Check console.</div>';
+} else {
+  cardEl.addEventListener('mousedown',  startDrag);
+  cardEl.addEventListener('touchstart', startDragT, {passive:false});
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('touchmove', onDragT, {passive:false});
+  document.addEventListener('mouseup',   endDrag);
+  document.addEventListener('touchend',  endDrag);
+  init();
+}

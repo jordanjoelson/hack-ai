@@ -189,46 +189,6 @@ body {
   border-bottom: var(--border);
   background: var(--orange);
   padding: 18px 0;
-  overflow: hidden;
-  white-space: nowrap;
-  position: relative;
-}
-
-.marquee-wrapper {
-  display: flex;
-  width: fit-content;
-}
-
-.marquee-inner {
-  display: inline-flex;
-  align-items: center;
-  animation: marquee 20s linear infinite;
-  will-change: transform;
-  flex-shrink: 0;
-}
-
-.marquee-inner span {
-  font-weight: 900;
-  font-size: 1rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: white;
-  padding: 0 48px;
-  white-space: nowrap;
-  text-shadow: 2px 2px 0 rgba(13, 13, 13, 0.15);
-  flex-shrink: 0;
-}
-
-.marquee-inner span.dot {
-  opacity: 0.5;
-  padding: 0 20px;
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
 }
 
 /* ─────────────────────────────
@@ -497,13 +457,15 @@ body {
 }
 
 .cbox {
-  background: var(--orange);
-  border: var(--border);
-  border-radius: 20px;
-  box-shadow: var(--shadow-lg);
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 rgba(13, 13, 13, .1);
   overflow: hidden;
   max-width: 360px;
   animation: cboxFloat 6s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
 }
 
 @keyframes cboxFloat {
@@ -512,48 +474,53 @@ body {
 }
 
 .cbox-top {
-  padding: 32px 28px 24px;
+  padding: 20px 24px 16px;
   text-align: center;
+  background: var(--white);
+  border-bottom: 2px dashed rgba(13, 13, 13, .2);
+  position: relative;
 }
 
 .cbox-logo {
-  height: 56px;
+  height: 48px;
   width: auto;
   display: block;
   margin: 0 auto 8px;
-  filter: drop-shadow(3px 3px 0 rgba(13, 13, 13, .3));
+  opacity: 0.9;
 }
 
 .cbox-sub {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.65);
-  margin-top: 6px;
+  color: rgba(13, 13, 13, .5);
+  margin-top: 4px;
 }
 
 .cbox-blimp {
-  display: block;
-  width: 100px;
-  margin: 12px auto;
+  position: absolute;
+  top: 50%;
+  right: 24px;
+  transform: translateY(-50%);
+  width: 60px;
+  height: auto;
   mix-blend-mode: multiply;
-  filter: brightness(0) invert(1) opacity(0.25);
+  filter: drop-shadow(2px 3px 0 rgba(13, 13, 13, .2));
 }
 
 .cbox-panel {
   background: var(--white);
-  border-top: var(--border);
-  padding: 24px 28px;
+  padding: 20px 24px;
 }
 
 .cbox-panel-head {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #999;
-  border-bottom: 2px solid #E5E5E0;
+  color: rgba(13, 13, 13, .5);
+  border-bottom: 1px dashed rgba(13, 13, 13, .15);
   padding-bottom: 10px;
   margin-bottom: 14px;
 }
@@ -561,27 +528,50 @@ body {
 .cbox-row {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  padding: 7px 0;
-  border-bottom: 1px solid #E5E5E0;
-  font-size: 0.78rem;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px dashed rgba(13, 13, 13, .15);
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
-.cbox-row:last-child { border: none; }
+.cbox-row:last-child {
+  border-bottom: 2px solid var(--black);
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+}
 
-.cbox-k { color: #888; font-weight: 500; }
-.cbox-v { color: var(--orange); font-weight: 700; }
+.cbox-k {
+  color: rgba(13, 13, 13, .6);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+.cbox-v {
+  color: var(--orange);
+  font-weight: 700;
+  text-align: right;
+}
 
 .cbox-shadow {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  top: 4px;
+  left: 4px;
   width: 100%;
   max-width: 360px;
   height: 100%;
-  background: var(--black);
-  border-radius: 20px;
+  background: rgba(13, 13, 13, .05);
+  border-radius: 8px;
   z-index: -1;
+  animation: shadowFloat 6s ease-in-out infinite;
+  box-shadow: 4px 4px 0 rgba(13, 13, 13, .05);
+}
+
+@keyframes shadowFloat {
+  0%,100% { transform: rotate(-1deg) translateY(0); }
+  50% { transform: rotate(1deg) translateY(-12px); }
 }
 
 .cereal-copy {
@@ -730,7 +720,7 @@ body {
 
 .final-blimp {
   display: block;
-  width: 200px;
+  width: 400px;
   margin: 0 auto 48px;
   mix-blend-mode: multiply;
   animation: blimpDrift 7s ease-in-out infinite;
